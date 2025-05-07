@@ -3,13 +3,13 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->get('/user-role', function (Request $request) {
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     $user = $request->user();
-
-    $role = $user->getRoleNames()->first(); // peut retourner null si aucun rôle
+    $role = $user->role;
 
     return response()->json([
-        'role' => $role ?? 'guest', // Valeur par défaut si aucun rôle
+        ...$user->only(['id', 'name', 'email']),
+        'role' => $role
     ]);
 });
 

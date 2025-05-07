@@ -52,23 +52,6 @@ class User extends Authenticatable
     }
 
 
-    public function hasPermissionAdmin()
-    {
-        return $this->role == 'admin';
-    }
-
-    public function hasPermissionTeacher()
-    {
-        return $this->role == 'teacher';
-    }
-
-    public function hasPermissionStudent()
-    {
-        return $this->role == 'student';
-    }
-
-
-
     public function getProfileAttribute()
     {
         return $this->profile();

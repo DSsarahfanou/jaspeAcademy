@@ -7,9 +7,9 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php';
-Route::get('/admin-dashboard', function(){
-    return ('dashboard');
-});
+//Route::get('/admin-dashboard', function(){
+//   return ('dashboard');
+//});
 
 //Route::middleware(['auth'])->group(function () {
   //  Route::get('/dashboard', [DashboardController::class, 'index']);
