@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -7,3 +7,10 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php';
+//Route::get('/admin-dashboard', function(){
+//   return ('dashboard');
+//});
+
+//Route::middleware(['auth'])->group(function () {
+  //  Route::get('/dashboard', [DashboardController::class, 'index']);
+//});
