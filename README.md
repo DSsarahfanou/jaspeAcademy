@@ -1,60 +1,112 @@
-1- Cloner le projet sur github
-===) Ouvrez votre terminal et faites:
-git clone 
+# JaspeAcademy – Guide d'installation
 
-2- Se déplacer dans le projet
-===) taper dans le terminal
-cd jaspeAcademy 
+## 1. Cloner le projet depuis GitHub
 
-3- Se déplacer dans un premier temps dans le projet laravel
-===) taper cette commande
+Ouvrez votre terminal et tapez :
+
+```bash
+git clone https://github.com/DSsarahfanou/jaspeAcademy.git
+```
+
+---
+
+## 2. Se déplacer dans le projet
+
+```bash
+cd jaspeAcademy
+```
+
+---
+
+## 3. Configuration du backend Laravel
+
+### 3.1 Se déplacer dans le dossier backend
+
+```bash
 cd next-backend
+```
 
-3.1- Installer les dépendances
-===)taper dans le terminal
+### 3.2 Installer les dépendances PHP
+
+```bash
 composer install
+```
 
-3.2-Créer un fichier .env et copier le contenu du fichier
-.env.example
+### 3.3 Créer le fichier d'environnement
 
-Ou bien remplacer le fichier .env.example par .env
+Copiez le fichier `.env.example` vers `.env` :
 
-3.3- Mettre en place la base de données avec les utilisateurs
-===) taper cette commande
+```bash
+cp .env.example .env
+```
+
+### 3.4 Configurer la base de données
+
+Assurez-vous que vos serveurs **Apache** et **MySQL** sont démarrés :
+
+- **Windows** : via **XAMPP** ou **WAMPP**
+- **Linux** : via la commande
+
+```bash
+sudo /opt/lampp/lampp start
+```
+
+Ensuite, exécutez la commande suivante :
+
+```bash
 php artisan migrate:fresh --seed
+```
 
-NB: Assurez- vous aue vos servers sont démarrer Apache et ?ySQL
-      =======xampp ou WAMPP sur window 
-      ====== taper : sudo /opt/lampp/lampp sur linux
+### 3.5 Démarrer le serveur Laravel
 
-3.4) Démarrer le serveur local de laravel
-====) taper la commande 
+```bash
 php artisan serve
+```
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-4- Se déplacer maintenant dans le dossier projet de next
-Ouvrir un nouveau terminal et taper
-cd jaspeAcademy 
+---
+
+## 4. Configuration du frontend Next.js
+
+### 4.1 Se déplacer dans le dossier frontend
+
+Ouvrez un **nouveau terminal**, puis tapez :
+
+```bash
+cd jaspeAcademy
 cd breeze-next
+```
 
-4.1- Installer les dépendances
-===)taper dans le terminal
+### 4.2 Installer les dépendances
+
+```bash
 npm install
-npm install react-icons 
+npm install react-icons
 npm install axios
+```
 
-NB: SI VOUS ETES SUR  WINDOWS ET QUE VOUS N'AVEZ PAS "npm"; Télécharger et installer node.js (https://nodejs.org/fr)  d'abord et reprenez le processus
+> ⚠️ **Windows uniquement** : Si la commande `npm` n’est pas reconnue, installez [Node.js](https://nodejs.org/fr) puis relancez les commandes ci-dessus.
 
-4.2-Créer un fichier .env et copier le contenu du fichier
-.env.example
+### 4.3 Créer le fichier d’environnement
 
-Ou bien remplacer le fichier .env.example par .env
+```bash
+cp .env.example .env
+```
 
-4.3-  Démarrer le serveur local de next
+### 4.4 Démarrer le serveur Next.js
 
+```bash
+npm run dev
+```
 
-5- Copier chaque lien dans un onglet de votre navigateur
-http://localhost:3000/
-http://127.0.0.1:8000/
+---
 
+## 5. Accéder aux applications
 
+Ouvrez votre navigateur et accédez aux adresses suivantes :
+
+- Frontend : [http://localhost:3000/](http://localhost:3000/)
+- Backend : [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+---
+
+> ✅ Merci d'avoir suivi les étapes !
