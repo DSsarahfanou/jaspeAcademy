@@ -51,7 +51,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
     const csrf = () => axios.get('/sanctum/csrf-cookie')
 
-    const register = async ({ setErrors, ...props }) => {
+{/*    const register = async ({ setErrors, ...props }) => {
         await csrf()
 
         setErrors([])
@@ -59,12 +59,42 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         axios
             .post('/register', props)
             .then(() => mutate())
+            router.push(getRedirectPath('role'))
             .catch(error => {
                 if (error.response.status !== 422) throw error
 
                 setErrors(error.response.data.errors)
-            })
+        }
+    
+    )
     }
+*/}
+    const register = async ({ setErrors, data }) => {
+        await csrf();
+        setErrors([]);
+    
+        try {
+            await axios.post('/register', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+    
+            await mutate();
+    
+            // Récupère l'utilisateur pour connaître son rôle
+            const userResponse = await axios.get('/api/user');
+            const role = userResponse.data.role || 'student';
+            router.push(getRedirectPath(role));
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                throw error;
+            }
+        }
+    };
+    
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
         await csrf()

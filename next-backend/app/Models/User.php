@@ -15,8 +15,9 @@ class User extends Authenticatable
         'name', 
         'surname',
         'gender',
-        'address',
         'picture',
+        'birth_date',
+        'address',
         'phone',
         'email',
         'password', 
@@ -49,6 +50,11 @@ class User extends Authenticatable
             case 'admin': return $this->hasOne(Admin::class, 'user_id');
             default: return null;
         }
+    }
+
+    public function getPictureUrlAttribute()
+    {
+        return $this->picture ? asset('storage/' . $this->picture) : null;
     }
 
 
