@@ -14680,3 +14680,5 @@ Did you mean one of these?
 #69 /home/danae/stage_jaspe/next-backend/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('...')
 #70 {main}
 "} 
+[2025-06-02 13:56:37] local.DEBUG: Données reçues: {"name":"FANOU","surname":"Sarah","gender":"femme","birth_date":"10/02/1995","address":"Agamandin","phone":"0151439322","email":"fanou@gmail.com","password":"password1234","password_confirmation":"password1234","role":"prof"} 
+[2025-06-02 14:02:58] local.DEBUG: Données reçues: {"name":"FANOU","surname":"Sarah","gender":"femme","birth_date":"10/02/1995","address":"Agamandin","phone":"0151439322","email":"fanou@gmail.com","password":"password1234","password_confirmation":"password1234","role":"prof"} 
