@@ -27,7 +27,9 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             teacher: '/dashboard/animateur',
             student: '/dashboard/apprenant'
         }
-        return paths[role] || '/dashboard/apprenant'
+        return paths[role] 
+        
+        //|| '/dashboard/apprenant'
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
@@ -39,7 +41,8 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             const userResponse = await axios.get('/api/user')
             await mutate()
             
-            const role = userResponse.data.role || 'student'
+            const role = userResponse.data.role
+            // || 'student'
             router.push(getRedirectPath(role))
         } catch (error) {
             if (error.response?.status === 422) {

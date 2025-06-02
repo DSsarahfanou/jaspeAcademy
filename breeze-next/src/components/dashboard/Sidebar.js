@@ -51,7 +51,7 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:bg-white md:border-r md:border-gray-200 md:shadow-sm">
+      <aside className="hidden h-full h-screen h-fix md:flex md:flex-col md:w-64 md:h-screen md:bg-white md:border-r md:border-gray-200 md:shadow-sm">
         <div className="flex-1">
           {/* En-tête du menu */}
           <div className="flex items-center px-6 py-4 border-b border-gray-200">

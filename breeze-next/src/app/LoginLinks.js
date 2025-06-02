@@ -29,6 +29,16 @@ const LoginLinks = () => {
   const { user, logout } = useAuth({ middleware: 'guest' })
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const getRedirectPath = (role) => {
+    const paths = {
+        admin: '/dashboard/admin',
+        teacher: '/dashboard/animateur',
+        student: '/dashboard/apprenant'
+    }
+    return paths[role] 
+  }
+
+  
 
   const toggleMenu = () => setMenuOpen(!menuOpen)
 
@@ -57,7 +67,7 @@ const LoginLinks = () => {
         <div className="items-center hidden gap-4 sm:flex">
           {user ? (
             <>
-              <Link href="/dashboard/apprenant" className={linkClasses("/dashboard", pathname)}>
+              <Link href= {getRedirectPath(user.role)}  className={linkClasses("/dashboard", pathname)}>
                 <FaUserCircle />
                 <span>Dashboard</span>
               </Link>
@@ -99,7 +109,7 @@ const LoginLinks = () => {
         <div className="px-4 py-3 space-y-2 bg-white border-t border-gray-200 shadow-md sm:hidden">
           {user ? (
             <>
-              <Link href="/dashboard/apprenant" onClick={toggleMenu} className={linkClasses("/dashboard", pathname)}>
+              <Link href= {getRedirectPath(user.role)}  onClick={toggleMenu} className={linkClasses("/dashboard", pathname)}>
                 <FaUserCircle /> Dashboard
               </Link>
 
