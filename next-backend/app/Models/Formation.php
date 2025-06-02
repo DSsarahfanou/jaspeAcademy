@@ -2,11 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User;
 
 class Formation extends Model
 {
+    use HasFactory;
+
+    protected $fillable = [
+        'prerequisites',
+        'price',
+        'formation_details',
+    ];
     public function students()
     {
         return
@@ -20,9 +28,14 @@ class Formation extends Model
     }
 
 
+
+
     public function equipments()
     {
-        return
-            $this->belongsToMany(Equipment::class);
+        return $this->belongsToMany(Equipment::class, 'equipments_formations');
     }
 }
+
+
+
+

@@ -7,7 +7,7 @@ import Header from '/src/app/(app)/Header'
 const DashLayout = ({ children }) => {
     return (
         <>
-            <Header title="Information"/>
+            {/*<Header title="Information"/>*/}
             <div className="flex min-h-screen bg-gray-50">
                 <Sidebar />
 
