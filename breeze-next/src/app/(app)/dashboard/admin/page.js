@@ -1,51 +1,88 @@
+// src/app/(app)/dashboard/admin/page.js
+"use client"
+import { useState, useEffect } from 'react';
 import { FaChartLine, FaShoppingCart, FaUsers, FaEuroSign, FaCalendarAlt, FaBoxOpen, FaRegClock, FaRegChartBar } from 'react-icons/fa';
-import CardStat from "/src/components/dashboard/CardStat";
+import CardStat from '/src/components/dashboard/CardStat';
 
-export const metadata = {
-    title: 'Tableau de bord - Supervision',
-}
+const fetchData = async (endpoint, token) => {
+    try {
+        const response = await fetch(`http://your-laravel-api/api/${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) throw new Error(`Erreur ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error(`Erreur lors de la récupération de ${endpoint}:`, error);
+        return null;
+    }
+};
+
+// export const metadata = {
+//     title: 'Tableau de bord - Supervision',
+// };
 
 const Dashboard = () => {
-    // Données simulées pour les statistiques
-    const statsData = [
-        {
-            title: "Revenus",
-            value: "34 152€",
-            growth: "+2.65%",
-            icon: <FaEuroSign className="text-blue-500" size={20} />,
-            trend: 'up'
-        },
-        {
-            title: "Commandes",
-            value: "5 643",
-            growth: "-0.82%",
-            icon: <FaShoppingCart className="text-green-500" size={20} />,
-            trend: 'down'
-        },
-        {
-            title: "Clients",
-            value: "45 254",
-            growth: "+6.24%",
-            icon: <FaUsers className="text-purple-500" size={20} />,
-            trend: 'up'
-        },
-        {
-            title: "Produits",
-            value: "1 248",
-            growth: "+3.51%",
-            icon: <FaBoxOpen className="text-orange-500" size={20} />,
-            trend: 'up'
-        }
-    ];
+    const [statsData, setStatsData] = useState([]);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Dernières activités
-    const recentActivities = [
-        { id: 1, action: "Nouvelle commande #4582", time: "2 min", icon: <FaShoppingCart /> },
-        { id: 2, action: "Paiement reçu #4581", time: "10 min", icon: <FaEuroSign /> },
-        { id: 3, action: "Nouveau client inscrit", time: "25 min", icon: <FaUsers /> },
-        { id: 4, action: "Produit mis à jour", time: "1h", icon: <FaBoxOpen /> },
-        { id: 5, action: "Promotion créée", time: "2h", icon: <FaChartLine /> }
-    ];
+    useEffect(() => {
+        const token = localStorage.getItem('token'); // Assure-toi que le token est stocké après la connexion
+        const loadData = async () => {
+            const usersData = await fetchData('users', token);
+            const formationsData = await fetchData('formations', token);
+            const ordersData = await fetchData('orders', token);
+            const equipmentsData = await fetchData('equipments', token);
+
+            setStatsData([
+                {
+                    title: 'Revenus',
+                    value: `${(ordersData?.data?.reduce((sum, order) => sum + (order.amount || 0), 0) || 0)}€`,
+                    growth: '+2.65%', // À calculer dynamiquement si possible
+                    icon: <FaEuroSign className="text-blue-500" size={20} />,
+                    trend: 'up',
+                },
+                {
+                    title: 'Commandes',
+                    value: ordersData?.data?.length || 0,
+                    growth: '-0.82%', // À calculer dynamiquement
+                    icon: <FaShoppingCart className="text-green-500" size={20} />,
+                    trend: 'down',
+                },
+                {
+                    title: 'Utilisateurs',
+                    value: usersData?.data?.length || 0,
+                    growth: '+6.24%', // À calculer dynamiquement
+                    icon: <FaUsers className="text-purple-500" size={20} />,
+                    trend: 'up',
+                },
+                {
+                    title: 'Équipements',
+                    value: equipmentsData?.data?.length || 0,
+                    growth: '+3.51%', // À calculer dynamiquement
+                    icon: <FaBoxOpen className="text-orange-500" size={20} />,
+                    trend: 'up',
+                },
+            ]);
+
+            // Exemple pour les activités récentes (à adapter selon ton API)
+            const activities = ordersData?.data?.slice(0, 5).map((order, index) => ({
+                id: index,
+                action: `Nouvelle commande #${order.id}`,
+                time: new Date(order.created_at).toLocaleTimeString('fr-FR'),
+                icon: <FaShoppingCart />,
+            })) || [];
+            setRecentActivities(activities);
+
+            setLoading(false);
+        };
+        loadData();
+    }, []);
+
+    if (loading) return <div>Chargement...</div>;
 
     return (
         <div className="space-y-6">
@@ -60,7 +97,7 @@ const Dashboard = () => {
             {/* Cartes de statistiques */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {statsData.map((stat, index) => (
-                    <CardStat 
+                    <CardStat
                         key={index}
                         title={stat.title}
                         value={stat.value}
@@ -86,8 +123,7 @@ const Dashboard = () => {
                     <div className="flex items-center justify-center h-64 rounded-md bg-gray-50">
                         <div className="text-center text-gray-400">
                             <FaRegChartBar size={40} className="mx-auto mb-2" />
-                            <p>Graphique des performances</p>
-                            <p className="text-sm">(Intégration avec une librairie de graphiques)</p>
+                            <p>Graphique des performances (à intégrer)</p>
                         </div>
                     </div>
                 </div>
@@ -116,39 +152,8 @@ const Dashboard = () => {
                     </button>
                 </div>
             </div>
-
-            {/* Section supplémentaire */}
-            <div className="p-6 bg-white rounded-lg shadow-sm">
-                <h2 className="mb-4 text-lg font-medium text-gray-800">Statistiques avancées</h2>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div className="p-4 border border-gray-200 rounded-lg">
-                        <h3 className="flex items-center text-sm font-medium text-gray-800">
-                            <FaChartLine className="mr-2 text-green-500" />
-                            Taux de conversion
-                        </h3>
-                        <p className="mt-2 text-2xl font-bold">3.65%</p>
-                        <p className="text-sm text-green-600">+0.5% vs période précédente</p>
-                    </div>
-                    <div className="p-4 border border-gray-200 rounded-lg">
-                        <h3 className="flex items-center text-sm font-medium text-gray-800">
-                            <FaUsers className="mr-2 text-blue-500" />
-                            Clients actifs
-                        </h3>
-                        <p className="mt-2 text-2xl font-bold">1,248</p>
-                        <p className="text-sm text-green-600">+12% vs période précédente</p>
-                    </div>
-                    <div className="p-4 border border-gray-200 rounded-lg">
-                        <h3 className="flex items-center text-sm font-medium text-gray-800">
-                            <FaShoppingCart className="mr-2 text-purple-500" />
-                            Panier moyen
-                        </h3>
-                        <p className="mt-2 text-2xl font-bold">87.50€</p>
-                        <p className="text-sm text-red-600">-2.3% vs période précédente</p>
-                    </div>
-                </div>
-            </div>
         </div>
-    )
-}
+    );
+};
 
 export default Dashboard;

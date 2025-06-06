@@ -32,6 +32,7 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed'],
+            'password_confirmation' => ['required', 'confirmed'],
             'role' => ['required', 'string'],
         ]);
     
@@ -52,13 +53,14 @@ class RegisteredUserController extends Controller
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
+            'password_confirmation' => Hash::make($request->input('password_confirmation')),
             'role' => $request->input('role'),
         ]);
     
         event(new Registered($user));
         Auth::login($user);
     
-        return response()->noContent();
+        return response()->json();
     }
     
 
