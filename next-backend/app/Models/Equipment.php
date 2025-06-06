@@ -17,6 +17,8 @@ class Equipment extends Model
         'status',
     ];
     //
+
+    // Traduction de la relation : Un equipemant  fait partir de zero ou plusieurs formations
     public function formations()
     {
         return $this->belongsToMany(Formation::class, 'equipments_formations', 'equipment_id', 'formation_id');
