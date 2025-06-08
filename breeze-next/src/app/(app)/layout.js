@@ -1,3 +1,4 @@
+//home/danae/stage_jaspe/breeze-next/src/app/(app)/layout.js
 'use client'
 
 import { useAuth } from '/src/hooks/auth'

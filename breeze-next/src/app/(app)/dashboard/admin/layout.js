@@ -1,3 +1,4 @@
+//breeze-next/src/app/(app)/dashboard/admin/layout.js
 import Sidebar from "/src/components/dashboard/Sidebar";
 import Footer from "/src/components/dashboard/Footer";
 import Header from '/src/app/(app)/Header'
