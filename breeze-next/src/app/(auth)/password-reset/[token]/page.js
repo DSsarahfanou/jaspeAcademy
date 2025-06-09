@@ -1,9 +1,9 @@
 'use client'
 
-import Button from '/src/omponents/Button'
-import Input from '/src/omponents/Input'
-import InputError from '/src/omponents/InputError'
-import Label from '/src/omponents/Label'
+import Button from '/src/components/Button'
+import Input from '/src/components/Input'
+import InputError from '/src/components/InputError'
+import Label from '/src/components/Label'
 import { useAuth } from '/src/hooks/auth'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
