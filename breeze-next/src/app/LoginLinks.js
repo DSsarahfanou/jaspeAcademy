@@ -43,7 +43,7 @@ const LoginLinks = () => {
   const toggleMenu = () => setMenuOpen(!menuOpen)
 
   return (
-    <nav className="fixed top-0 left-0 z-50 w-full bg-white border-b border-blue-100 shadow-sm">
+    <nav className="fixed top-0 left-0 z-50 w-full bg-white border-b border-blue-500 shadow-sm">
       <div className="container flex items-center justify-between px-4 py-3 mx-auto">
         <Link
           href="/"

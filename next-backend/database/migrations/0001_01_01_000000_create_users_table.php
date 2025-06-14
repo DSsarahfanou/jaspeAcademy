@@ -42,6 +42,14 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->unsignedBigInteger('userable_id')->nullable();
+            $table->string('userable_type')->nullable();
+        });
+
+
     }
 
     /**

@@ -12,4 +12,10 @@ class Student extends Model
         return
             $this->belongsToMany(Formation::class);
     }
+
+
+    //     public function user(): MorphOne
+    // {
+    //     return $this->morphOne(User::class, 'userable');
+    // }
 }

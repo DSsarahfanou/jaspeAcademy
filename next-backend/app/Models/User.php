@@ -37,6 +37,17 @@ class User extends Authenticatable
         ];
     }
 
+
+    //     public function userable(): MorphTo
+    // {
+    //     return $this->morphTo();
+    // }
+    // public function getProfileAttribute()
+    // {
+    //     return $this->userable;
+    // }
+
+
     public function formations()
     {
         return $this->belongsToMany(Formation::class);
@@ -52,10 +63,10 @@ class User extends Authenticatable
         }
     }
 
-    public function getPictureUrlAttribute()
-    {
-        return $this->picture ? asset('storage/' . $this->picture) : null;
-    }
+    // public function getPictureUrlAttribute()
+    // {
+    //     return $this->picture ? asset('storage/' . $this->picture) : null;
+    // }
 
 
     public function getProfileAttribute()

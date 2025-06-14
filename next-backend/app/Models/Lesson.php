@@ -14,4 +14,8 @@ class Lesson extends Model
         'contents',
         'video',
     ];
+        public function module()
+    {
+        return $this->belongsTo(Module::class);
+    }
 }

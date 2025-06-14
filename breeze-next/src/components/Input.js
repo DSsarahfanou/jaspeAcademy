@@ -1,7 +1,13 @@
-const Input = ({ disabled = false, className, ...props }) => (
+const Input = ({ disabled = false, className = '', ...props }) => (
     <input
         disabled={disabled}
-        className={`${className} rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50`}
+        className={`
+            w-full px-3 py-2 text-sm text-gray-700 placeholder-gray-400 
+            bg-white border border-gray-300 rounded-md shadow-sm 
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+            disabled:opacity-50 disabled:cursor-not-allowed 
+            ${className}
+        `}
         {...props}
     />
 )

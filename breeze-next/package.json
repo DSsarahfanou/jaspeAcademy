@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.4.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.4",
+    "motion": "^12.18.1",
     "next": "^14.2.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
+    "react-toastify": "^11.0.5",
     "swr": "^1.3.0"
   },
   "devDependencies": {

@@ -1,261 +1,279 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '/src/hooks/auth';
+import toast, { Toaster } from 'react-hot-toast';
+import { FaEdit, FaTrash, FaEye, FaEyeSlash } from 'react-icons/fa';
 
-export default function UserManager() {
-  const { user, token } = useAuth();
-
-  const [activeTab, setActiveTab] = useState('animators');
-  const [animators, setAnimators] = useState([]);
-  const [students, setStudents] = useState([]);
+export default function UserManagementPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
+    surname: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    password_confirmation: '',
+    gender: '',
+    birth_date: '',
+    address: '',
+    phone: '',
     role: '',
   });
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [users, setUsers] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [editingUserId, setEditingUserId] = useState(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('http://localhost:8000/api/users', {
+        withCredentials: true,
+      });
+      setUsers(res.data || []);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des utilisateurs.');
+    }
+  };
 
-  // Charger tous les utilisateurs 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: 'no-store',
-        });
-
-        if (!res.ok) throw new Error(`Erreur : ${res.status}`);
-        const data = await res.json();
-        setUsers(data.data || []);
-      } catch (err) {
-        console.error("Erreur chargement users:", err);
-      }
-    };
-
     fetchUsers();
-  }, [token, apiUrl]);
+  }, []);
 
-  // Charger animators & students
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/api/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = res.data || [];
-        setAnimators(data.filter(u => u.role === 'teacher'));
-        setStudents(data.filter(u => u.role === 'student'));
-      } catch (err) {
-        console.error("Erreur chargement rôles:", err);
-      }
-    };
-
-    fetchRoles();
-  }, [token, apiUrl]);
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+    setErrors({ ...errors, [e.target.name]: '' });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert('Les mots de passe ne correspondent pas');
-      return;
-    }
+    setErrors({});
 
     try {
-      const payload = { ...formData, role: activeTab === 'animators' ? 'teacher' : 'student' };
+      await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+        withCredentials: true,
+      });
 
-      if (isEditing && selectedUser) {
-        const response = await axios.put(`${apiUrl}/users/${selectedUser.id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+      if (editingUserId) {
+        await axios.put(`http://localhost:8000/api/users/${editingUserId}`, formData, {
+          withCredentials: true,
         });
-        updateUserInList(response.data);
+        toast.success('Utilisateur modifié avec succès');
       } else {
-        const response = await axios.post(`${apiUrl}/users`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await axios.post('http://localhost:8000/api/users', formData, {
+          withCredentials: true,
         });
-        addUserToList(response.data);
+        toast.success('Utilisateur créé avec succès');
       }
 
-      resetForm();
-    } catch (err) {
-      console.error(err);
+      setFormData({
+        name: '',
+        surname: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
+        gender: '',
+        birth_date: '',
+        address: '',
+        phone: '',
+        role: '',
+      });
+      setEditingUserId(null);
+      fetchUsers();
+    } catch (error) {
+      if (error.response?.status === 422) {
+        setErrors(error.response.data.errors || {});
+        toast.error('Veuillez corriger les erreurs.');
+      } else {
+        toast.error("Erreur lors de l'envoi.");
+      }
     }
   };
 
-  const updateUserInList = (user) => {
-    if (user.role === 'teacher') {
-      setAnimators(animators.map(u => (u.id === user.id ? user : u)));
-    } else {
-      setStudents(students.map(u => (u.id === user.id ? user : u)));
-    }
-  };
-
-  const addUserToList = (user) => {
-    if (user.role === 'teacher') {
-      setAnimators(prev => [...prev, user]);
-    } else {
-      setStudents(prev => [...prev, user]);
-    }
+  const handleEdit = (user) => {
+    setEditingUserId(user.id);
+    setFormData({
+      name: user.name || '',
+      surname: user.surname || '',
+      email: user.email || '',
+      password: '',
+      password_confirmation: '',
+      gender: user.gender || '',
+      birth_date: user.birth_date || '',
+      address: user.address || '',
+      phone: user.phone || '',
+      role: user.role || '',
+    });
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Confirmer suppression ?')) return;
-
-    try {
-      await axios.delete(`${apiUrl}/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (activeTab === 'animators') {
-        setAnimators(animators.filter(u => u.id !== id));
-      } else {
-        setStudents(students.filter(u => u.id !== id));
+    if (window.confirm('Confirmer la suppression ?')) {
+      try {
+        await axios.delete(`http://localhost:8000/api/users/${id}`, {
+          withCredentials: true,
+        });
+        toast.success('Utilisateur supprimé');
+        fetchUsers();
+      } catch (error) {
+        toast.error("Erreur lors de la suppression.");
       }
-    } catch (err) {
-      console.error(err);
     }
   };
 
-  const toggleStatus = async (user) => {
-    const newStatus = user.status === 'active' ? 'inactive' : 'active';
-    try {
-      const response = await axios.put(`${apiUrl}/users/${user.id}`, {
-        ...user,
-        status: newStatus,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  const renderUsersByRole = (role) => {
+    const roleUsers = users.filter((u) => u.role === role);
+    if (roleUsers.length === 0) return null;
 
-      updateUserInList(response.data);
-    } catch (err) {
-      console.error(err);
-    }
+    return (
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-2 capitalize">{role}s</h3>
+        <table className="min-w-full bg-white rounded shadow text-sm">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-2">Nom</th>
+              <th className="p-2">Prénom</th>
+              <th className="p-2">Email</th>
+              <th className="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roleUsers.map((user) => (
+              <tr key={user.id} className="border-t hover:bg-gray-50">
+                <td className="p-2">{user.name}</td>
+                <td className="p-2">{user.surname}</td>
+                <td className="p-2">{user.email}</td>
+                <td className="p-2 flex items-center gap-2">
+                  <button
+                    className="text-yellow-600 hover:text-yellow-800"
+                    onClick={() => handleEdit(user)}
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => handleDelete(user.id)}
+                  >
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
-
-  const openModal = (user = null) => {
-    setModalOpen(true);
-    setIsEditing(!!user);
-    setSelectedUser(user);
-    if (user) {
-      setFormData({ ...user, confirmPassword: user.password });
-    } else {
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: '',
-      });
-    }
-  };
-
-  const resetForm = () => {
-    setModalOpen(false);
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      role: '',
-    });
-    setSelectedUser(null);
-    setIsEditing(false);
-  };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const userList = activeTab === 'animators' ? animators : students;
 
   return (
-    <div className="p-4">
+    <div className="p-6 max-w-5xl mx-auto">
+      <Toaster position="top-right" />
 
-      {/* Liste utilisateurs*/}
-      <div>
-        <h1 className="mb-6 text-2xl font-bold">Liste des utilisateurss</h1>
-        <div className="grid gap-6">
-          {users.map((user) => (
-            <div key={user.id} className="p-4 bg-gray-100 rounded shadow">
-              <p><strong>Nom :</strong> {user.name}</p>
-              <p><strong>Email :</strong> {user.email}</p>
-              <p><strong>Rôle :</strong> {user.role}</p>
-            </div>
-          ))}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Gestion des utilisateurs</h2>
+        <a href="#addUser">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            Ajouter un utilisateur
+          </button>
+        </a>
+      </div>
+
+      {/* Groupes */}
+      {renderUsersByRole('teacher')}
+      {renderUsersByRole('student')}
+      {renderUsersByRole('admin')}
+
+      <h2 className="text-2xl font-bold mt-10 mb-4">{editingUserId ? "Modifier" : "Ajouter"} un utilisateur</h2>
+      <form
+        id="addUser"
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded shadow"
+      >
+        {[
+          { label: 'Nom', name: 'name', type: 'text' },
+          { label: 'Prénom', name: 'surname', type: 'text' },
+          { label: 'Email', name: 'email', type: 'email' }, 
+          { label: 'Genre', name: 'gender', type: 'text' },
+          { label: 'Date de naissance', name: 'birth_date', type: 'date' },
+          { label: 'Adresse', name: 'address', type: 'text' },
+          { label: 'Téléphone', name: 'phone', type: 'text' },
+        ].map((f) => (
+          <div key={f.name}>
+            <input
+              type={f.type}
+              name={f.name}
+              placeholder={f.label}
+              value={formData[f.name]}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            />
+            {errors[f.name] && <p className="text-red-500 text-sm">{errors[f.name]}</p>}
+          </div>
+        ))}
+
+        {/* Champ mot de passe */}
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            placeholder="Mot de passe"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full p-2 border rounded pr-10"
+          />
+          <span
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
+          {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex mb-4 space-x-4 mt-6">
-        <button onClick={() => setActiveTab('animators')} className={activeTab === 'animators' ? 'font-bold' : ''}>Animateurs</button>
-        <button onClick={() => setActiveTab('students')} className={activeTab === 'students' ? 'font-bold' : ''}>Apprenants</button>
-        <button onClick={() => openModal()} className="px-4 py-2 ml-auto text-white bg-blue-500 rounded">Ajouter</button>
-      </div>
+        {/* Champ confirmation mot de passe */}
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? 'text' : 'password'}
+            name="password_confirmation"
+            placeholder="Confirmation"
+            value={formData.password_confirmation}
+            onChange={handleChange}
+            className="w-full p-2 border rounded pr-10"
+          />
+          <span
+            onClick={() => setShowConfirmPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+          >
+            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
+          {errors.password_confirmation && (
+            <p className="text-red-500 text-sm">{errors.password_confirmation}</p>
+          )}
+        </div>
 
-      {/* Tableau utilisateurs */}
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">Nom</th>
-            <th>Email</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {userList.map(user => (
-            <tr key={user.id} className="border-t">
-              <td className="p-2">{user.name}</td>
-              <td>{user.email}</td>
-              <td>
-                <button onClick={() => toggleStatus(user)} className="px-2 py-1 text-sm bg-gray-200 rounded">
-                  {user.status === 'active' ? '🟢 Actif' : '⚫ Inactif'}
-                </button>
-              </td>
-              <td>
-                <button onClick={() => openModal(user)} className="mr-2 text-blue-500">Modifier</button>
-                <button onClick={() => handleDelete(user.id)} className="text-red-500">Supprimer</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      {/* Modal formulaire */}
-      {modalOpen && (
-        <form onSubmit={handleSubmit} className="p-4 mt-4 bg-white border rounded shadow">
-          <h2 className="mb-2 text-xl font-bold">{isEditing ? 'Modifier' : 'Ajouter'} un utilisateur</h2>
-          <div className="mb-2">
-            <label className="block">Nom</label>
-            <input name="name" value={formData.name} onChange={handleChange} required className="w-full p-2 border" />
-          </div>
-          <div className="mb-2">
-            <label className="block">Email</label>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full p-2 border" />
-          </div>
-          <div className="mb-2">
-            <label className="block">Mot de passe</label>
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required={!isEditing} className="w-full p-2 border" />
-          </div>
-          <div className="mb-2">
-            <label className="block">Confirmer mot de passe</label>
-            <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required={!isEditing} className="w-full p-2 border" />
-          </div>
-          <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 text-white bg-green-500 rounded">{isEditing ? 'Modifier' : 'Créer'}</button>
-            <button type="button" onClick={resetForm} className="px-4 py-2 bg-gray-300 rounded">Annuler</button>
-          </div>
-        </form>
-      )}
+        <div>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">-- Rôle --</option>
+            <option value="student">Étudiant</option>
+            <option value="teacher">Enseignant</option>
+            <option value="admin">Admin</option>
+          </select>
+          {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+        </div>
+
+        <div className="md:col-span-2">
+          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded" type="submit">
+            {editingUserId ? 'Modifier' : 'Créer'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

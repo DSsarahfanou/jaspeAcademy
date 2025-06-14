@@ -5,8 +5,52 @@ import Footer from "/src/components/Footer";
 import { FaGraduationCap, FaLightbulb, FaVideo, FaUsers } from "react-icons/fa";
 
 export const metadata = {
-    title: 'Laravel',
+    title: 'JaspeAcademy',
 }
+
+// import { useEffect, useState } from 'react';
+//   const [formations, setFuseState('');
+// ormations] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = 
+
+  // async function getFormations() {
+  //   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  //   if (!baseUrl) throw new Error('Base URL non définie dans .env.local');
+
+  //   const res = await fetch(`${baseUrl}/api/formations`, {
+  //     cache: 'no-store',
+  //   });
+
+  //   if (!res.ok) {
+  //     throw new Error(`Erreur lors de la récupération : ${res.status}`);
+  //   }
+
+  //   const data = await res.json();
+  //   return data.data;
+  // }
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       setLoading(true);
+  //       const data = await getFormations();
+  //       console.log('Données reçues :', data);
+  //       setFormations(data);
+  //     } catch (err) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+
+  //   fetchData();
+  // }, []);
+
+
+
+
+
 
 const Home = () => {
     return (
@@ -99,6 +143,7 @@ const Home = () => {
                 </div>
               </section>
         
+
               {/* Popular Courses Section - Refined with softer colors */}
               <section className="py-20 bg-gradient-to-b from-white to-blue-50">
                 <div className="container max-w-6xl px-6 mx-auto">

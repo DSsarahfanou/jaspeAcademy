@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('formations', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->string('prerequisites');
             $table->integer('price');
             $table->text('formation_details');
+            $table->string('picture');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

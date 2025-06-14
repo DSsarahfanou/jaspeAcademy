@@ -13,6 +13,7 @@ class EquipmentSeeder extends Seeder
         DB::table('equipments')->insert([
             [
                 'name' => 'Ordinateur Portable Dell XPS 13',
+                'picture' => 'images/equipments/pc.jpg',
                 'quantity' => 15,
                 'price' => 800000,
                 'status' => true,
@@ -24,6 +25,7 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'name' => 'MacBook Pro 14"',
+                'picture' => 'images/equipments/pc2.jpg',
                 'quantity' => 8,
                 'price' => 1200000,
                 'status' => true,
@@ -35,6 +37,7 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'name' => 'Tablette Graphique Wacom',
+                'picture' => 'images/equipments/pc3.jpg',
                 'quantity' => 20,
                 'price' => 150000,
                 'status' => true,
@@ -46,6 +49,7 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'name' => 'Écran 4K Samsung',
+                'picture' => 'images/equipments/pc4.jpg',
                 'quantity' => 12,
                 'price' => 300000,
                 'status' => true,
@@ -57,6 +61,7 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'name' => 'Casque Audio Sony WH-1000XM4',
+                'picture' => 'images/equipments/pc5.jpg',
                 'quantity' => 25,
                 'price' => 80000,
                 'status' => true,
@@ -68,6 +73,7 @@ class EquipmentSeeder extends Seeder
             ],
             [
                 'name' => 'Caméra Logitech C920',
+                'picture' => 'images/equipments/pc6.jpg',
                 'quantity' => 30,
                 'price' => 45000,
                 'status' => false,

@@ -21,28 +21,38 @@ class EquipmentController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0',
-            'price' => 'required|numeric|min:0',
-            'status' => 'required|boolean',
-            'description' => 'nullable|string|max:500',
-            'details' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
-        ]);
-    
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('equipments', 'public');
-            $validated['image'] = $path;
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'quantity' => 'required|integer|min:0',
+                'price' => 'required|numeric|min:0',
+                'status' => 'required|boolean',
+                'description' => 'nullable|string|max:500',
+                'details' => 'nullable|string',
+                'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('picture')->store('equipments', 'public');
+                $validated['image'] = $path;
+            }
+
+
+            $equipment = Equipment::create($validated);
+
+            return response()->json([
+                'message' => 'Équipement créé avec succès',
+                'data' => $equipment->load('formations')
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erreur interne',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-    
-        $equipment = Equipment::create($validated);
-        
-        return response()->json([
-            'message' => 'Équipement créé avec succès',
-            'data' => $equipment->load('formations')
-        ], 201);
     }
+
 
     public function update(Request $request, Equipment $equipment)
     {

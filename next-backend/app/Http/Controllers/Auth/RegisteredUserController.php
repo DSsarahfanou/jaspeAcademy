@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+
 use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
@@ -32,7 +34,6 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed'],
-            'password_confirmation' => ['required', 'confirmed'],
             'role' => ['required', 'string'],
         ]);
     
@@ -53,7 +54,6 @@ class RegisteredUserController extends Controller
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
-            'password_confirmation' => Hash::make($request->input('password_confirmation')),
             'role' => $request->input('role'),
         ]);
     

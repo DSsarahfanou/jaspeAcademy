@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('equipments', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('picture');
             $table->integer('quantity');
             $table->integer('price');
             $table->boolean('status')->default(true); // true = disponible
