@@ -28,7 +28,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/formations/FormationDetails/page.js", "src/app/formations/FormationDetails/page.js"  ],
   "exclude": [
     "node_modules"
   ]

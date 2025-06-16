@@ -45,20 +45,8 @@ export default function FormationsManagementPage() {
               <p className="text-sm text-gray-600">{formation.formation_details || 'Aucune description'}</p>
               <p className="text-sm">Prix : {formation.price} FCFA</p>
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button onClick={() => router.push(`/dashboard/admin/formations/${formation.id}/edit`)}>
-                  <FaEdit className="mr-1" /> Modifier
-                </Button>
-                <Button onClick={() => handleDelete(formation.id)} variant="destructive">
+                <Button className="bg-red-500" onClick={() => handleDelete(formation.id)} variant="destructive">
                   <FaTrash className="mr-1" /> Supprimer
-                </Button>
-                <Button onClick={() => router.push(`/dashboard/admin/formations/${formation.id}/formationuipments`)}>
-                  <FaTools className="mr-1" /> Équipements
-                </Button>
-                <Button onClick={() => router.push(`/dashboard/admin/formations/${formation.id}/modules`)}>
-                  <FaVideo className="mr-1" /> Modules / Leçons
-                </Button>
-                <Button onClick={() => router.push(`/dashboard/admin/formations/${formation.id}/quiz`)}>
-                  <FaFileAlt className="mr-1" /> Quiz
                 </Button>
                 <Button onClick={() => router.push(`/dashboard/admin/formations/${formation.id}`)}>
                   Détails

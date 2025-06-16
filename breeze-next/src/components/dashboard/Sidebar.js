@@ -79,7 +79,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className={`bg-white border-r ${isOpen ? 'w-64' : 'w-20'} transition-all duration-300`}>
+    <aside className={` border-r ${isOpen ? 'w-64' : 'w-20'} transition-all duration-300 bg-blue-900 text-white h-screen`}>
       <div className="items-center p-4">
         <button onClick={toggleSidebar} className="flex items-center gap-96">
           {isOpen ? (
@@ -103,7 +103,7 @@ export default function Sidebar() {
               <>
                 <button
                   onClick={() => toggleSubMenu(index)}
-                  className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-100"
+                  className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-100 hover:text-blue-900"
                 >
                   <span className="flex items-center space-x-2">
                     {item.icon}
@@ -119,7 +119,7 @@ export default function Sidebar() {
                       <li key={subIndex}>
                         <a
                           href={subItem.href}
-                          className="flex items-center p-2 space-x-2 text-sm rounded hover:bg-gray-100"
+                          className="flex items-center p-2 space-x-2 text-sm rounded hover:bg-gray-100 hover:text-blue-900"
                         >
                           {subItem.icon}
                           {isOpen && <span>{subItem.label}</span>}
@@ -132,7 +132,7 @@ export default function Sidebar() {
             ) : (
               <a
                 href={item.href}
-                className="flex items-center p-2 space-x-2 rounded hover:bg-gray-100"
+                className="flex items-center p-2 space-x-2 rounded hover:bg-gray-100 hover:text-blue-900"
               >
                 {item.icon}
                 {isOpen && <span>{item.label}</span>}
@@ -141,7 +141,7 @@ export default function Sidebar() {
           </li>
         ))}
       </ul>
-      <div className="p-4 mt-4 text-sm text-gray-600 border-t">
+      <div className="p-4 mt-4 text-sm text-white border-t">
         <div className="flex items-center space-x-2">
           <FaCalendarAlt size={16} />
           {isOpen && <span>{new Date().toLocaleDateString()}</span>}

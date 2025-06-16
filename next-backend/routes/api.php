@@ -20,8 +20,6 @@
         Route::middleware('auth:sanctum')->post('/profile/password', [ProfileController::class, 'updatePassword']);
 
 
-
-
         Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
             $user = $request->user();
             $role = $user->role;

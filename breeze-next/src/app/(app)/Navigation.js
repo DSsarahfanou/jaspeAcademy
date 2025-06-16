@@ -25,18 +25,13 @@ const Navigation = ({ user }) => {
             <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
                     {/* Logo + Lien dashboard */}
-                    <div className="flex items-center">
+                    <div className="flex items-center -ml-16">
                         <Link
                             className="flex items-center gap-2 text-2xl font-bold text-blue-600 transition-transform hover:scale-105"
                             href="/">
                             <ApplicationLogo />
                         </Link>
 
-                        <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                            <NavLink href="/dashboard" active={pathname === '/dashboard'}>
-                                Tableau de bord
-                            </NavLink>
-                        </div>
                     </div>
 
                     {/* Avatar & Menu */}
@@ -89,11 +84,11 @@ const Navigation = ({ user }) => {
             </div>
             {open && (
                 <div className="sm:hidden">
-                    <div className="pt-2 pb-3 space-y-1">
+                    {/* <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink href="/dashboard" active={pathname === '/dashboard'}>
                             Tableau de bord
                         </ResponsiveNavLink>
-                    </div>
+                    </div> */}
 
                     <div className="pt-4 pb-1 border-t border-gray-200">
                         <div className="flex items-center px-4 space-x-3">

@@ -6,7 +6,9 @@ const axios = Axios.create({
         'X-Requested-With': 'XMLHttpRequest',
     },
     withCredentials: true,
-    withXSRFToken: true
+    withXSRFToken: true,
+    maxContentLength: 1000 * 1024 * 1024, // 100MB
+    maxBodyLength: 1000 * 1024 * 1024 // 100MB
 })
 
 export default axios

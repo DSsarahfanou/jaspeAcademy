@@ -398,39 +398,8 @@ const Home = () => {
                         </Link>
                                       </div>
                     </section>
-                    {/* Testimonials Section */}
-                    <section className="py-20 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-                      <div className="container max-w-5xl px-6 mx-auto">
-                        <div className="mb-16 text-center">
-                          <h2 className="text-3xl font-bold text-gray-800">Ce que disent nos apprenants</h2>
-                          <p className="max-w-2xl mx-auto mt-4 text-lg text-gray-600">
-                            Des milliers d’utilisateurs nous font confiance pour transformer leur avenir professionnel.
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                          <div className="p-6 bg-white border border-gray-100 shadow-md rounded-xl">
-                            <p className="mb-4 italic text-gray-600">“Une plateforme claire et motivante. J’ai pu apprendre à mon rythme, sans pression, et progresser rapidement.”</p>
-                            <div className="flex items-center">
-                              <div className="flex items-center justify-center w-10 h-10 font-semibold text-white bg-blue-500 rounded-full">AG</div>
-                              <div className="ml-3">
-                                <p className="font-medium text-gray-800">Alice Girard</p>
-                                <p className="text-sm text-gray-500">Étudiante en développement web</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="p-6 bg-white border border-gray-100 shadow-md rounded-xl">
-                            <p className="mb-4 italic text-gray-600">“J’ai adoré les vidéos interactives et le support de la communauté. On ne se sent jamais seul.”</p>
-                            <div className="flex items-center">
-                              <div className="flex items-center justify-center w-10 h-10 font-semibold text-white bg-indigo-500 rounded-full">TM</div>
-                              <div className="ml-3">
-                                <p className="font-medium text-gray-800">Thomas Moreau</p>
-                                <p className="text-sm text-gray-500">Designer UX</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </section>
+
+                    
         
         
                     

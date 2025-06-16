@@ -10,7 +10,10 @@ const DashLayout = ({ children }) => {
         <>
             {/*<Header title="Information"/>*/}
             <div className="flex min-h-screen bg-gray-50">
-                <Sidebar />
+                <div className="sticky top-0 flex flex-col max-h-screen space-y-4 overflow-y-auto shadow p-4ounded">
+                    <Sidebar />
+                </div>
+                
 
                 <div className="flex flex-col flex-1 mt-5">
 
