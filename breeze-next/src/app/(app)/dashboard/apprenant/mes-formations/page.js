@@ -5,15 +5,15 @@ import Link from "next/link";
 const formations = [
   {
     id: 1,
-    titre: "Introduction aux Réseaux",
+    name: "Introduction aux Réseaux",
     animateur: "M. Diallo",
-    description: "Les bases essentielles des réseaux informatiques.",
+    formation_details: "Les bases essentielles des réseaux informatiques.",
   },
   {
     id: 2,
-    titre: "Sécurité des Systèmes",
+    name: "Sécurité des Systèmes",
     animateur: "Mme Traoré",
-    description: "Protection des infrastructures réseau et bonnes pratiques.",
+    formation_details: "Protection des infrastructures réseau et bonnes pratiques.",
   },
 ];
 
@@ -28,8 +28,8 @@ export default function MesFormationsPage() {
             href={`/dashboard/apprenant/mes-formations/${formation.id}`}
             className="block p-4 bg-white rounded shadow hover:bg-blue-50 transition"
           >
-            <h2 className="text-xl font-semibold">{formation.titre}</h2>
-            <p className="text-gray-600 text-sm mt-1">{formation.description}</p>
+            <h2 className="text-xl font-semibold">{formation.name}</h2>
+            <p className="text-gray-600 text-sm mt-1">{formation.formation_details}</p>
             <p className="text-sm mt-2 text-blue-800 font-medium">Animateur : {formation.animateur}</p>
           </Link>
         ))}

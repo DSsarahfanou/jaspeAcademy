@@ -3,6 +3,7 @@
         use App\Http\Controllers\LessonController;
         use App\Http\Controllers\OrderController;
         use App\Http\Controllers\RequestCourseController;
+        use App\Http\Controllers\TeacherFormationController;
         use Illuminate\Http\Request;
         use Illuminate\Support\Facades\Route;   
         use App\Http\Controllers\ProfileController;
@@ -48,7 +49,14 @@
         Route::apiResource('orders', OrderController::class);
         Route::apiResource('requests', RequestCourseController::class);
 
+        Route::get('teachers/unassigned-formations', [TeacherFormationController::class, 'unassignedFormations']);
+        Route::get('/teachers/unassigned', [TeacherFormationController::class, 'unassignedTeachers']);
 
+
+        Route::post('teachers/assign/{formationId}', [TeacherFormationController::class, 'assignTeacher']);
+        Route::delete('teachers/unassign/{formationId}', [TeacherFormationController::class, 'unassignTeacher']);
+
+        Route::apiResource('teachers', TeacherFormationController::class);
 
 
         ?>

@@ -1,50 +1,90 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { FaCheckCircle, FaArrowRight, FaArrowLeft, FaBookOpen } from 'react-icons/fa'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import Script from 'next/script'
+import axios from 'axios'
+import {Button} from '/src/components/ui/Button'
+import { useSession } from 'next-auth/react'
 
-export default function FormationInscriptionPage() {
-  // Données de la formation (à remplacer par vos données réelles)
-  const formation = {
-    id: 1,
-    title: "Formation Complète en Développement Web",
-    description: "Maîtrisez les technologies modernes du web avec cette formation intensive. Apprenez React, Node.js, Express et MongoDB pour devenir un développeur full-stack.",
-    price: 50000,
-    duration: "3 mois",
-    prerequisites: "Bases en HTML/CSS et JavaScript recommandées",
-    image: "/formation-web.jpg"
-  }
+export default function FormationInscriptionPage({params}) {
+  const { id } = params;
+  alert(id);
+    console.log('ID reçu:', id);
 
-  // États pour gérer les étapes
+  const router = useRouter()
+  const { data: session } = useSession()
+  const [formation, setFormation] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Fonction pour passer à l'étape suivante
+  useEffect(() => {
+    const fetchFormation = async () => {
+      try {
+        const response = await axios.get(`/api/formations/${id}`)
+        if (response.data?.data) {
+          setFormation(response.data.data)
+        } else {
+          throw new Error('Formation data not found')
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Erreur lors du chargement')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFormation()
+  }, [id])
+
+  if (loading) return <div className="p-6">Chargement...</div>
+  if (error) return <div className="p-6">Erreur: {error}</div>
+  if (!formation) {
+    return (
+      <div className="p-6">
+        <p>Formation introuvable</p>
+        <Button onClick={() => router.back()} className="mt-4">
+          Retour
+        </Button>
+      </div>
+    )
+  }
+
   const nextStep = () => setCurrentStep(prev => prev + 1)
   const prevStep = () => setCurrentStep(prev => prev - 1)
 
-  // Fonction pour simuler le paiement avec KkiaPay
   const handlePayment = () => {
+    if (!session?.user?.id) {
+      setError('Veuillez vous connecter pour effectuer le paiement')
+      return
+    }
+
     setIsLoading(true)
     
-    // Configuration KkiaPay
-    window.kkiapay.show({
+    window.kkiapay?.show({
       amount: formation.price,
-      key: "YOUR_KKIAPAY_API_KEY", // Remplacez par votre clé API
+      key: process.env.NEXT_PUBLIC_KKIAPAY_API_KEY,
       callback: (response) => {
         if (response.status === "SUCCESS") {
           setPaymentSuccess(true)
           nextStep()
+          // You might want to call your API here to register the payment
+        } else {
+          setError('Le paiement a échoué. Veuillez réessayer.')
         }
         setIsLoading(false)
       },
       data: {
         formationId: formation.id,
-        userId: "123" // À remplacer par l'ID de l'utilisateur connecté
+        userId: session.user.id
       },
       theme: {
         primary: "#4f46e5",
@@ -53,7 +93,6 @@ export default function FormationInscriptionPage() {
     })
   }
 
-  // Animation entre les étapes
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0 },
@@ -65,9 +104,8 @@ export default function FormationInscriptionPage() {
       <Script 
         src="https://cdn.kkiapay.me/k.js" 
         strategy="beforeInteractive"
-        onReady={() => console.log("KkiaPay script loaded")}
       />
-      
+           
       <div className="max-w-3xl mx-auto">
         {/* Étapes du processus */}
         <div className="flex justify-between mb-12">
@@ -99,23 +137,22 @@ export default function FormationInscriptionPage() {
                 variants={stepVariants}
                 className="p-6 sm:p-8"
               >
-                <h2 className="mb-2 text-2xl font-bold text-gray-900">{formation.title}</h2>
+                <h2 className="mb-2 text-2xl font-bold text-gray-900">{formation.name}</h2>
                 <div className="flex items-center mb-6 text-gray-500">
-                  <span>Durée: {formation.duration}</span>
                   <span className="mx-2">•</span>
                   <span>Prix: {formation.price.toLocaleString()} FCFA</span>
                 </div>
 
                 <img 
-                  src={formation.image} 
-                  alt={formation.title} 
+                  src={formation.picture} 
+                  alt={formation.name} 
                   className="object-cover w-full h-64 mb-6 rounded-lg"
                 />
 
                 <div className="space-y-6">
                   <div>
                     <h3 className="mb-2 text-lg font-semibold">Description</h3>
-                    <p className="text-gray-600">{formation.description}</p>
+                    <p className="text-gray-600">{formation.formation_details}</p>
                   </div>
 
                   <div>
@@ -150,10 +187,9 @@ export default function FormationInscriptionPage() {
                 
                 <div className="p-6 mb-8 border border-indigo-100 rounded-lg bg-indigo-50">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">{formation.title}</h3>
+                    <h3 className="text-lg font-medium">{formation.name}</h3>
                     <span className="text-lg font-bold">{formation.price.toLocaleString()} FCFA</span>
                   </div>
-                  <p className="text-gray-600">Durée: {formation.duration}</p>
                 </div>
 
                 <div className="mb-8">
@@ -213,7 +249,7 @@ export default function FormationInscriptionPage() {
                     </div>
                     <h2 className="mb-4 text-2xl font-bold text-gray-900">Paiement réussi !</h2>
                     <p className="mb-8 text-gray-600">
-                      Félicitations ! Vous êtes maintenant inscrit à la formation "{formation.title}".
+                      Félicitations ! Vous êtes maintenant inscrit à la formation "{formation.name}".
                       Vous pouvez commencer immédiatement ou y accéder plus tard depuis votre espace personnel.
                     </p>
                     

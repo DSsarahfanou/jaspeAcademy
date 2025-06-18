@@ -81,7 +81,7 @@ export default function FormationDetails({ params }) {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Prix</p>
-              <p>{formation.price} €</p>
+              <p>{formation.price} FCFA</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Prérequis</p>

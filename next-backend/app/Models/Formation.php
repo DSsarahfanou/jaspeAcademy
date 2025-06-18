@@ -21,6 +21,7 @@ class Formation extends Model
         'price',
         'formation_details',
         'picture',
+        'categorie', 
     ];
 
     // Fin
@@ -39,6 +40,27 @@ class Formation extends Model
         return
             $this->belongsToMany(Teacher::class);
     }
+
+
+    /**
+     * L'enseignant (teacher) qui anime la formation.
+     */
+    // public function teacher(): BelongsTo
+    // {
+    //     return $this->belongsTo(User::class, 'user_id'); // 'user_id' est la clé étrangère dans la table `formations`
+    //         ->whereHas('roles', fn($query) => $query->where('name', 'teacher'));
+    //         // Optionnel : s'assurer que le user a bien le rôle "teacher"
+    // }
+
+    /**
+     * Les étudiants (students) qui suivent la formation.
+     */
+    // public function students(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(User::class, 'formation_student', 'formation_id', 'user_id')
+    //         ->whereHas('roles', fn($query) => $query->where('name', 'student'))
+    //         ->withPivot('progress', 'enrolled_at'); // Exemple de champs supplémentaires
+    // }
 
     //Fin
 

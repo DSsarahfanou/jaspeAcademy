@@ -19,7 +19,6 @@ export default function FormationsManagementPage() {
     setSelectedFormation(formation)
     setIsModalOpen(true)
   }
-
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedFormation(null)
@@ -54,15 +53,19 @@ export default function FormationsManagementPage() {
                   </div>
                 )}
                 <h2 className="text-xl font-semibold">{formation.name}</h2>
-                <p className="text-sm text-gray-600 line-clamp-2">{formation.formation_details || 'Aucune description'}</p>
+                 <p className="text-sm text-gray-600 line-clamp-2">{formation.formation_details || 'Aucune description'}</p>
                 <p className="text-sm">Prix : {formation.price} FCFA</p>
                 <div className="flex flex-col gap-4 mt-6 sm:flex-row">
-                  <Link
+                  <Button className="bg-black" onClick={() => router.push(`/dashboard/apprenant/catalogue/${formation.id}/formation_inscription`)}>
+                    Suivre la formation
+                  </Button>
+                  
+                  {/* <Link
                     href={`/dashboard/apprenant/formation_inscription`}
                     className="inline-block w-full px-5 py-2 text-sm font-semibold text-center text-white transition bg-green-600 rounded sm:w-auto hover:bg-green-700"
                   >
-                    Suivre la formation
-                  </Link>
+                    
+                  </Link> */}
 
                   <motion.button
                     onClick={() => openModal(formation)}

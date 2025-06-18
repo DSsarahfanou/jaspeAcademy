@@ -48,9 +48,10 @@ class User extends Authenticatable
     // }
 
 
+
     public function formations()
     {
-        return $this->belongsToMany(Formation::class);
+        return $this->hasMany(Formation::class, 'user_id');
     }
 
     public function profile()
