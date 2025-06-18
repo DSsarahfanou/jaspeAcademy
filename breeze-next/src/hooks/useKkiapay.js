@@ -5,20 +5,23 @@ export function useKkiapay() {
   const [kkiapayReady, setKkiapayReady] = useState(false);
 
   useEffect(() => {
+    // Vérifier si le script est déjà chargé
     if (typeof window !== 'undefined' && window.kkiapay) {
       setKkiapayReady(true);
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://cdn.kkiapay.me/k.js';
-    script.async = true;
-    script.onload = () => setKkiapayReady(true);
-    document.body.appendChild(script);
+    // Le script est déjà chargé via <Script> dans le composant,
+    // donc on attend simplement qu'il soit disponible
+    const checkKkiapay = setInterval(() => {
+      if (window.kkiapay) {
+        setKkiapayReady(true);
+        clearInterval(checkKkiapay);
+      }
+    }, 100);
 
-    return () => {
-      document.body.removeChild(script);
-    };
+    // Cleanup : arrêter l'intervalle
+    return () => clearInterval(checkKkiapay);
   }, []);
 
   return kkiapayReady;
