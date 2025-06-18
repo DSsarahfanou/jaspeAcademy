@@ -6,7 +6,8 @@ import axios from '/src/lib/axios'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Script from 'next/script'
-import { useKkiapay } from '/src/hooks/useKkiapay'
+//import { useKkiapay } from '/src/hooks/useKkiapay'
+import { openKkiapayWidget } from '@kkiapay/sdk';
 
 export default function FormationInscriptionPage({ params }) {
   const kkiapayReady = useKkiapay();
@@ -80,15 +81,10 @@ export default function FormationInscriptionPage({ params }) {
   //     }
   //   })
   // }
-  const handlePayment = () => {
-    if (!kkiapayReady || !window.kkiapay) {
-      console.error("KkiaPay n'est pas encore prêt ou le script n'est pas chargé");
-      setIsLoading(false);
-      return;
-    }
 
+  const handlePayment = () => {
     setIsLoading(true);
-    window.kkiapay.show({
+    openKkiapayWidget({
       amount: formation.price,
       key: "a2b855004b5811f0a02f6db188e41c43",
       sandbox: true,
@@ -109,7 +105,6 @@ export default function FormationInscriptionPage({ params }) {
       },
     });
   };
-
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0 },
