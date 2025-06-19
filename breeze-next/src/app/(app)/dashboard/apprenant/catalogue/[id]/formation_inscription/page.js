@@ -81,9 +81,9 @@ export default function FormationInscriptionPage({ params }) {
   //   })
   // }
 
-  function openPayment() {
+  function openPayment(price) {
     openKkiapayWidget({
-      amount: 1000, // Example amount
+      amount: price, // Example amount
       api_key: "a2b855004b5811f0a02f6db188e41c43", // Replace with your actual API key
       sandbox: true, // Set to false for production
       phone: "97000000", // Example phone number
@@ -218,7 +218,7 @@ export default function FormationInscriptionPage({ params }) {
                   <h3 className="mb-4 text-lg font-semibold">Méthode de paiement</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <button
-                      onClick={openPayment}
+                      onClick={openPayment(formation.price)}
                      // disabled={isLoading || !kkiapayReady}
                       //className={`... ${(!kkiapayReady || isLoading) ? 'opacity-50 cursor-not-allowed' : 'flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition'}`}
                     >
