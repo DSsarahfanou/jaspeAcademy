@@ -6,11 +6,10 @@ import axios from '/src/lib/axios'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Script from 'next/script'
-//import { useKkiapay } from '/src/hooks/useKkiapay'
-import { openKkiapayWidget } from '@kkiapay/sdk';
+import { openKkiapayWidget, addKkiapayListener, removeKkiapayListener } from 'kkiapay';
 
 export default function FormationInscriptionPage({ params }) {
-  const kkiapayReady = useKkiapay();
+  //const kkiapayReady = useKkiapay();
   const { id } = params
   const router = useRouter()
   const [formation, setFormation] = useState(null)
@@ -82,29 +81,37 @@ export default function FormationInscriptionPage({ params }) {
   //   })
   // }
 
-  const handlePayment = () => {
-    setIsLoading(true);
+  function openPayment() {
     openKkiapayWidget({
-      amount: formation.price,
-      key: "a2b855004b5811f0a02f6db188e41c43",
-      sandbox: true,
-      callback: (response) => {
-        if (response.status === "SUCCESS") {
-          setPaymentSuccess(true);
-          nextStep();
-        }
-        setIsLoading(false);
-      },
-      data: {
-        formationId: formation.id,
-        userId: "123",
-      },
-      theme: {
-        primary: "#4f46e5",
-        secondary: "#ffffff",
-      },
+      amount: 1000, // Example amount
+      api_key: "a2b855004b5811f0a02f6db188e41c43", // Replace with your actual API key
+      sandbox: true, // Set to false for production
+      phone: "97000000", // Example phone number
+      position: "right"
+      // Add other parameters as needed
     });
-  };
+
+    addKkiapayListener('success', (response) => {
+      console.log('Payment successful!', response);
+      // Handle successful payment (e.g., update order status)
+        if (response.status === "SUCCESS") {
+        setPaymentSuccess(true)
+        nextStep()
+      }
+        setIsLoading(false)
+
+    });
+
+    addKkiapayListener('error', (error) => {
+      console.error('Payment error:', error);
+      // Handle payment errors
+    });
+
+    addKkiapayListener('cancel', () => {
+      console.log('Payment cancelled');
+      // Handle payment cancellation
+    });
+  }
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0 },
@@ -113,11 +120,11 @@ export default function FormationInscriptionPage({ params }) {
 
   return (
     <div className="min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
-      <Script
+      {/* <Script
         src="https://cdn.kkiapay.me/k.js"
         strategy="lazyOnload"
         onLoad={() => console.log("KkiaPay script chargé")}
-      />
+      /> */}
 
 
       <div className="max-w-3xl mx-auto">
@@ -211,16 +218,18 @@ export default function FormationInscriptionPage({ params }) {
                   <h3 className="mb-4 text-lg font-semibold">Méthode de paiement</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <button
-                      onClick={handlePayment}
-                      disabled={isLoading || !kkiapayReady}
-                      className={`... ${(!kkiapayReady || isLoading) ? 'opacity-50 cursor-not-allowed' : 'flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition'}`}
+                      onClick={openPayment}
+                     // disabled={isLoading || !kkiapayReady}
+                      //className={`... ${(!kkiapayReady || isLoading) ? 'opacity-50 cursor-not-allowed' : 'flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition'}`}
                     >
                       <img
                         src="https://kkiapay.me/assets/img/kkiapay.png"
                         alt="KkiaPay"
                         className="h-10 mb-2"
                       />
-                      {!kkiapayReady ? 'Chargement...' : 'Payer avec KkiaPay'}
+                      {/* {!kkiapayReady ? 'Chargement...' : 'Payer avec KkiaPay'} */}
+                            Payer avec KkiaPay
+                     
                     </button>
 
                     <button className="flex flex-col items-center justify-center p-4 transition border rounded-lg hover:border-indigo-500">

@@ -49,6 +49,25 @@
         Route::apiResource('orders', OrderController::class);
         Route::apiResource('requests', RequestCourseController::class);
 
+        // api.php
+
+        Route::get('teachers-formations-count', function () {
+            $teachers = User::where('role', 'teacher')
+                ->withCount('formations')
+                ->get()
+                ->map(fn($t) => [
+                    'teacher_id' => $t->id,
+                    'count' => $t->formations_count,
+                ]);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $teachers,
+            ]);
+        });
+
+
+
         Route::get('teachers/unassigned-formations', [TeacherFormationController::class, 'unassignedFormations']);
         Route::get('/teachers/unassigned', [TeacherFormationController::class, 'unassignedTeachers']);
 

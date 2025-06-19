@@ -4,26 +4,35 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import axios from '/src/lib/axios'
 import Link from 'next/link'
-import { FaUserCheck, FaUserTimes, FaUsers } from 'react-icons/fa'
+import { FaUserCheck, FaUserTimes, FaUsers, FaBook } from 'react-icons/fa'
 import { MdAssignmentInd } from 'react-icons/md'
 
 export default function TeacherList() {
-  const [filter, setFilter] = useState('all') // 'all' | 'assigned' | 'unassigned'
+  const [filter, setFilter] = useState('all') // all | assigned | unassigned
 
-  const { data: allTeachers, error, isLoading } = useSWR('/api/teachers', () => 
+  const { data: allTeachers, error, isLoading } = useSWR('/api/teachers', () =>
     axios.get('/api/teachers').then(res => res.data.data)
   )
 
-  const { data: unassignedTeachers } = useSWR('/api/teachers/unassigned', () => 
+  const { data: unassignedTeachers } = useSWR('/api/teachers/unassigned', () =>
     axios.get('/api/teachers/unassigned').then(res => res.data.data)
+  )
+
+  const { data: teacherFormations } = useSWR('/api/teachers-formations-count', () =>
+    axios.get('/api/teachers-formations-count').then(res => res.data.data)
   )
 
   const isUnassigned = (teacherId) => {
     return unassignedTeachers?.some(t => t.id === teacherId)
   }
 
+  const getFormationCount = (teacherId) => {
+    const found = teacherFormations?.find(f => f.teacher_id === teacherId)
+    return found ? found.count : 0
+  }
+
   if (error) return <div>Erreur de chargement</div>
-  if (isLoading || !unassignedTeachers || !allTeachers) return <div>Chargement...</div>
+  if (isLoading || !unassignedTeachers || !allTeachers || !teacherFormations) return <div>Chargement...</div>
 
   const filteredTeachers = allTeachers.filter(teacher => {
     if (filter === 'assigned') return !isUnassigned(teacher.id)
@@ -69,6 +78,7 @@ export default function TeacherList() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredTeachers.map(teacher => {
           const initials = teacher.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+          const formationCount = getFormationCount(teacher.id)
 
           return (
             <div key={teacher.id} className="p-4 border rounded-xl shadow hover:shadow-lg transition bg-white">
@@ -98,6 +108,11 @@ export default function TeacherList() {
                 </span>
               )}
 
+              <div className="text-sm text-gray-700 flex items-center gap-2 mb-2">
+                <FaBook className="text-gray-500" />
+                <span>{formationCount} formation{formationCount > 1 ? 's' : ''} assignée{formationCount > 1 ? 's' : ''}</span>
+              </div>
+
               <div className="mt-2 flex flex-col gap-2">
                 <Link 
                   href={`/dashboard/admin/teachers/${teacher.id}`}
@@ -110,6 +125,7 @@ export default function TeacherList() {
                   href="/dashboard/admin/teachers/assign"
                   className="text-sm inline-block px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                 >
+                  <faPlus></faPlus>
                   ➕ Assigner une formation
                 </Link>
               </div>
