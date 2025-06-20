@@ -35,11 +35,13 @@ class Formation extends Model
             $this->belongsToMany(Student::class);
     }
 
+
+
     public function teachers()
     {
-        return
-            $this->belongsToMany(Teacher::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
+
 
 
     /**

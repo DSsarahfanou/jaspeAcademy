@@ -1,5 +1,6 @@
         <?php
         //next-backend/routes/api.php
+        use App\Http\Controllers\FormationStudentController;
         use App\Http\Controllers\LessonController;
         use App\Http\Controllers\OrderController;
         use App\Http\Controllers\RequestCourseController;
@@ -78,4 +79,15 @@
         Route::apiResource('teachers', TeacherFormationController::class);
 
 
-        ?>
+
+
+
+
+       
+
+        Route::post('/formation-student', [FormationStudentController::class, 'store']);
+        Route::get('/student/{id}/formations', [FormationStudentController::class, 'formationsByStudent']);
+        Route::get('/formation/{id}/students', [FormationStudentController::class, 'studentsByFormation']);
+
+
+                ?>

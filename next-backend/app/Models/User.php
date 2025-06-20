@@ -49,10 +49,27 @@ class User extends Authenticatable
 
 
 
-    public function formations()
+
+    public function studentFormations()
     {
-        return $this->hasMany(Formation::class, 'user_id');
+        // Pour les users de type student
+        return $this->belongsToMany(Formation::class, 'formation_students', 'student_id', 'formation_id');
     }
+
+    public function teacherFormations()
+    {
+        // Pour les users de type teacher
+        return $this->hasMany(Formation::class, 'teacher_id');
+    }
+
+
+
+    // public function formations()
+    // {
+    //     return $this->hasMany(Formation::class, 'user_id');
+    // }
+
+
 
     public function profile()
     {

@@ -166,7 +166,7 @@ export default function FormationDetails({ params }) {
                 <p className="text-sm text-gray-600">Prix: {equipment.price} €</p>
                 {equipment.picture && (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${equipment.picture}`}
+                    src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${equipment.image}`}
                     alt={equipment.name}
                     className="mt-2 w-full h-32 object-contain"
                   />

@@ -5,18 +5,16 @@ import Link from 'next/link'
 import axios from '/src/lib/axios'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import Script from 'next/script'
 import { openKkiapayWidget, addKkiapayListener, removeKkiapayListener } from 'kkiapay';
 
 export default function FormationInscriptionPage({ params }) {
-  //const kkiapayReady = useKkiapay();
   const { id } = params
   const router = useRouter()
   const [formation, setFormation] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
-  const [paymentSuccess, setPaymentSuccess] = useState(true)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -52,66 +50,63 @@ export default function FormationInscriptionPage({ params }) {
   const nextStep = () => setCurrentStep(prev => prev + 1)
   const prevStep = () => setCurrentStep(prev => prev - 1)
 
-  // const handlePayment = () => {
-  //   if (!kkiapayReady) {
-  //     console.error("KkiaPay n'est pas encore prêt")
-  //     return
-  //   }
+  const handlePaymentSuccess = async (response) => {
+    try {
+      // Enregistrer l'inscription et générer la facture
+      const inscriptionResponse = await axios.post('/api/formation/inscription', {
+        formationId: formation.id,
+        paymentData: response,
+        amount: formation.price
+      });
 
-  //   setIsLoading(true)
-  //   window.kkiapay.show({
-  //     amount: formation.price,
-  //     key: "a2b855004b5811f0a02f6db188e41c43",
-  //     sandbox: true, // À désactiver en production
-  //     callback: (response) => {
-  //       if (response.status === "SUCCESS") {
-  //         setPaymentSuccess(true)
-  //         nextStep()
-  //       }
-  //       setIsLoading(false)
-  //     },
-  //     data: {
-  //       formationId: formation.id,
-  //       userId: "123" // À remplacer par l'ID réel
-  //     },
-  //     theme: {
-  //       primary: "#4f46e5",
-  //       secondary: "#ffffff"
-  //     }
-  //   })
-  // }
+      if (inscriptionResponse.data.success) {
+        setPaymentSuccess(true);
+        nextStep();
+      }
+    } catch (err) {
+      console.error("Erreur lors de l'enregistrement de l'inscription", err);
+      setPaymentSuccess(false);
+      nextStep();
+    }
+  }
 
   function openPayment(price) {
+    setIsLoading(true);
+    
     openKkiapayWidget({
-      amount: price, // Example amount
-      api_key: "a2b855004b5811f0a02f6db188e41c43", // Replace with your actual API key
-      sandbox: true, // Set to false for production
-      phone: "97000000", // Example phone number
+      amount: price,
+      api_key: "a2b855004b5811f0a02f6db188e41c43",
+      sandbox: true,
+      phone: "97000000",
       position: "right"
-      // Add other parameters as needed
     });
 
-    addKkiapayListener('success', (response) => {
+    const successListener = (response) => {
       console.log('Payment successful!', response);
-      // Handle successful payment (e.g., update order status)
-        if (response.status === "SUCCESS") {
-        setPaymentSuccess(true)
-        nextStep()
-      }
-        setIsLoading(false)
+      handlePaymentSuccess(response);
+      removeKkiapayListener('success', successListener);
+      setIsLoading(false);
+    };
 
-    });
-
-    addKkiapayListener('error', (error) => {
+    const errorListener = (error) => {
       console.error('Payment error:', error);
-      // Handle payment errors
-    });
+      setPaymentSuccess(false);
+      nextStep();
+      removeKkiapayListener('error', errorListener);
+      setIsLoading(false);
+    };
 
-    addKkiapayListener('cancel', () => {
+    const cancelListener = () => {
       console.log('Payment cancelled');
-      // Handle payment cancellation
-    });
+      removeKkiapayListener('cancel', cancelListener);
+      setIsLoading(false);
+    };
+
+    addKkiapayListener('success', successListener);
+    addKkiapayListener('error', errorListener);
+    addKkiapayListener('cancel', cancelListener);
   }
+
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0 },
@@ -120,13 +115,6 @@ export default function FormationInscriptionPage({ params }) {
 
   return (
     <div className="min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
-      {/* <Script
-        src="https://cdn.kkiapay.me/k.js"
-        strategy="lazyOnload"
-        onLoad={() => console.log("KkiaPay script chargé")}
-      /> */}
-
-
       <div className="max-w-3xl mx-auto">
         {/* Étapes du processus */}
         <div className="flex justify-between mb-12">
@@ -160,13 +148,12 @@ export default function FormationInscriptionPage({ params }) {
               >
                 <h2 className="mb-2 text-2xl font-bold text-gray-900">{formation.name}</h2>
                 <div className="flex items-center mb-6 text-gray-500">
-
                   <span className="mx-2">•</span>
                   <span>Prix: {formation.price.toLocaleString()} FCFA</span>
                 </div>
 
                 <img
-                  src={formation.pucture}
+                  src={`http://localhost:8000/storage/${formation.picture}`}
                   alt={formation.name}
                   className="object-cover w-full h-64 mb-6 rounded-lg"
                 />
@@ -199,10 +186,9 @@ export default function FormationInscriptionPage({ params }) {
             {currentStep === 2 && (
               <motion.div
                 key="step2"
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                variants={stepVariants}
+                initial={{ opacity: 0, x: 0 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 0 }}
                 className="p-6 sm:p-8"
               >
                 <h2 className="mb-6 text-2xl font-bold text-blue-600 text-center">Paiement de la formation</h2>
@@ -218,27 +204,18 @@ export default function FormationInscriptionPage({ params }) {
                   <h3 className="mb-4 text-lg font-semibold">Méthode de paiement</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <button
-                      onClick={openPayment(formation.price)}
-                     // disabled={isLoading || !kkiapayReady}
-                      //className={`... ${(!kkiapayReady || isLoading) ? 'opacity-50 cursor-not-allowed' : 'flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition'}`}
+                      onClick={() => openPayment(formation.price)}
+                      disabled={isLoading}
+                      className={`flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition ${
+                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
                       <img
                         src="https://kkiapay.me/assets/img/kkiapay.png"
                         alt="KkiaPay"
                         className="h-10 mb-2"
                       />
-                      {/* {!kkiapayReady ? 'Chargement...' : 'Payer avec KkiaPay'} */}
-                            Payer avec KkiaPay
-                     
-                    </button>
-
-                    <button className="flex flex-col items-center justify-center p-4 transition border rounded-lg hover:border-indigo-500">
-                      <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Mobile-money-Logo-01-CMYK.svg/1200px-Mobile-money-Logo-01-CMYK.svg.png"
-                        alt="Mobile Money"
-                        className="h-10 mb-2"
-                      />
-                      <span>Mobile Money</span>
+                      {isLoading ? 'Traitement...' : 'Payer avec KkiaPay'}
                     </button>
                   </div>
                 </div>
@@ -251,15 +228,6 @@ export default function FormationInscriptionPage({ params }) {
                     <FaArrowLeft className="mr-2" />
                     Retour
                   </button>
-
-                  <button
-                    onClick={nextStep}
-                    className="flex items-center px-6 py-3 text-white transition bg-blue-500 rounded-lg hover:bg-blue-400"
-                  >
-                    Valider paiement
-                    <FaArrowRight className="ml-2" />
-                  </button>
-
                 </div>
               </motion.div>
             )}
@@ -282,7 +250,7 @@ export default function FormationInscriptionPage({ params }) {
                     <h2 className="mb-4 text-2xl font-bold text-gray-900">Paiement réussi !</h2>
                     <p className="mb-8 text-gray-600">
                       Félicitations ! Vous êtes maintenant inscrit à la formation "{formation.name}".
-                      Vous pouvez commencer immédiatement ou y accéder plus tard depuis votre espace personnel.
+                      Une facture a été envoyée à votre adresse email et sera disponible dans votre espace personnel.
                     </p>
 
                     <div className="flex flex-col justify-center gap-4 sm:flex-row">

@@ -169,7 +169,7 @@ export default function FormationsManagementPage() {
                         >
                           {equipment.picture && (
                             <img
-                              src={`http://localhost:8000/storage/${equipment.picture}`}
+                              src={`http://localhost:8000/storage/${equipment.image}`}
                               alt={equipment.name}
                               className="object-cover w-12 h-12 rounded"
                             />

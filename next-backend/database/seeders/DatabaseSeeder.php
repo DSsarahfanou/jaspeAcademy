@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             RequestCourseSeeder::class,
             EquipmentFormationSeeder::class,
             EquipmentsFormationsSeeder::class,
+            FormationStudentSeeder::class,
         ]);
     }
 }
