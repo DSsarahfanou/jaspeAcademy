@@ -9,6 +9,11 @@ class FormationStudent extends Model
     protected $fillable = [
         'formation_id',
         'student_id',
+        'status',
+        'progression',
+        'score',
+        'attestation',
+        'facture',
     ];
 
     public function formation()

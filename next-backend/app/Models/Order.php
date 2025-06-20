@@ -15,8 +15,9 @@ class Order extends Model
         'order_status',
     ];
 
-    public function equipments_formations()
+    public function equipments_orders()
     {
-        return $this->belongsToMany(Equipments_Formations::class);
+        return $this->belongsToMany(EquipmentFormation::class, 'equipment_orders', 'equipment_id', 'order_id');
     }
 }
+ 

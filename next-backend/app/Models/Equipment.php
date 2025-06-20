@@ -26,4 +26,18 @@ class Equipment extends Model
     {
         return $this->belongsToMany(Formation::class, 'equipments_formations', 'equipment_id', 'formation_id');
     }
+
+    
+    public function equipments_formations()
+    {
+        return $this->belongsToMany(EquipmentFormation::class, 'equipment_orders', 'equipment_id', 'order_id');
+    }
+
+
+
+    public function equipments_orders()
+    {
+        return $this->belongsToMany(EquipmentFormation::class, 'equipment_orders', 'equipment_id', 'order_id');
+    }
+
 }

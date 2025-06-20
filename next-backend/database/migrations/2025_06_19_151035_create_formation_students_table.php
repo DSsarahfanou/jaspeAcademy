@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->string('status');
+            $table->integer('progression');
+            $table->integer('score');
+            $table->string('attestation');
+            $table->string('facture');
             $table->timestamps();
         });
     }
