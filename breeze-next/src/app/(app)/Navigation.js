@@ -26,11 +26,11 @@ const Navigation = ({ user }) => {
                 <div className="flex justify-between h-16">
                     {/* Logo + Lien dashboard */}
                     <div className="flex items-center -ml-16">
-                        <Link
+                        {/* <Link
                             className="flex items-center gap-2 text-2xl font-bold text-blue-600 transition-transform hover:scale-105"
                             href="/">
                             <ApplicationLogo />
-                        </Link>
+                        </Link> */}
 
                     </div>
 

@@ -15,7 +15,7 @@ const DashLayout = ({ children }) => {
                 </div>
                 
 
-                <div className="flex flex-col flex-1 mt-5">
+                <div className=" mt-24 flex flex-col flex-1">
 
                     <div className="flex-1 p-6 ">
                         {children}

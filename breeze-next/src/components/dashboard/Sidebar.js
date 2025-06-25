@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   FaUser,
   FaChartBar,
@@ -47,11 +48,7 @@ const navItems = [
   {
     label: 'Gestion des formateurs',
     icon: <FaBookOpen size={20} />,
-    subItems: [
-      { label: 'Assigner formations', icon: <FaPlus size={16} />, href: '/formateurs/assign' },
-      { label: 'Voir élèves', icon: <FaUsers size={16} />, href: '/formateurs/students' },
-      { label: 'Retirer formateurs', icon: <FaMinus size={16} />, href: '/formateurs/remove' },
-    ],
+    href: '/dashboard/admin/teachers/',
   },
   {
     label: 'Gestion des demandes de stage',
@@ -84,10 +81,14 @@ export default function Sidebar() {
         <button onClick={toggleSidebar} className="flex items-center gap-96">
           {isOpen ? (
             <div className="flex items-center justify-between gap-9">
-              <span className="text-xl font-bold">Menu</span>
-              <p className='gap-96'> </p>
-              <p className='gap-96'> </p>
-              <p className='gap-96'> </p>
+              <span className="text-lg font-bold">
+                <Link
+                  className="flex items-center gap-2 text-xl font-bold  transition-transform hover:scale-105"
+                  href="/">
+                  <FaGraduationCap className="text-white" />
+                  Jaspe <span className="font-light  text-white">Academy</span>
+                </Link>   
+              </span> 
               <FaTimes size={22} />
             </div>
           ) : (

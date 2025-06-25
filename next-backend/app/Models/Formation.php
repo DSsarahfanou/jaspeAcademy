@@ -85,6 +85,7 @@ class Formation extends Model
         return $this->belongsToMany(Equipment::class, 'equipments_formations', 'formation_id', 'equipment_id');
     }
     
+    
     // Fin : 
 }
 

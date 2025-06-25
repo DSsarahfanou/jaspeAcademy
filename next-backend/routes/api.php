@@ -44,30 +44,14 @@
         Route::apiResource('users', UserController::class);
 
         Route::apiResource('modules', ModuleController::class);
-        Route::get('moduleSpeciales/{module}', [ModuleController::class, 'moduleSpeciale']);
+        Route::get('moduleSpeciales/{module}', [ModuleController::class, 'moduleSpeciale']);//sallai
 
-        Route::apiResource('                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ', LessonController::class);
+        Route::apiResource('     /api/                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ', LessonController::class);
         Route::apiResource('orders', OrderController::class);
         Route::apiResource('requests', RequestCourseController::class);
 
-        // api.php
 
-        Route::get('teachers-formations-count', function () {
-            $teachers = User::where('role', 'teacher')
-                ->withCount('formations')
-                ->get()
-                ->map(fn($t) => [
-                    'teacher_id' => $t->id,
-                    'count' => $t->formations_count,
-                ]);
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $teachers,
-            ]);
-        });
-
-
+        Route::get('teachers/count-formations', [TeacherFormationController::class, 'countFormations']);
 
         Route::get('teachers/unassigned-formations', [TeacherFormationController::class, 'unassignedFormations']);
         Route::get('/teachers/unassigned', [TeacherFormationController::class, 'unassignedTeachers']);
@@ -77,6 +61,8 @@
         Route::delete('teachers/unassign/{formationId}', [TeacherFormationController::class, 'unassignTeacher']);
 
         Route::apiResource('teachers', TeacherFormationController::class);
+
+        Route::get('teachers/{id} ', [TeacherFormationController::class, 'show($id)']);
 
 
 

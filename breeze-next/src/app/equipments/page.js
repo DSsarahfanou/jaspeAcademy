@@ -24,7 +24,7 @@ export default async function EquipmentsPage() {
   const equipments = await getEquipments();
 
   return (
-    <div>
+    <div >
       <h1 className="mb-6 text-2xl font-bold">Liste des équipements</h1>
       <div className="grid gap-6">
         {equipments.map((equipment) => (

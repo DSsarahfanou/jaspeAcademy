@@ -59,7 +59,7 @@ class User extends Authenticatable
     public function teacherFormations()
     {
         // Pour les users de type teacher
-        return $this->hasMany(Formation::class, 'teacher_id');
+        return $this->hasMany(Formation::class, 'user_id');
     }
 
 

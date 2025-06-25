@@ -11,7 +11,9 @@ class Meeting extends Model
     use HasFactory;
 
         protected $fillable = [
+        'formation_id',
         'link',
         'status',
+        'date',
     ];
 }

@@ -10,7 +10,9 @@ import {
   FaBook,
   FaSignOutAlt,
   FaBars,
+  FaGraduationCap,
 } from "react-icons/fa";
+import { useAuth } from "/src/hooks/auth";
 
 const links = [
   {
@@ -41,6 +43,7 @@ const links = [
 ];
 
 export default function SidebarAnimateur() {
+  const {logout} = useAuth()
   const [open, setOpen] = useState(true);
 
   return (
@@ -51,7 +54,17 @@ export default function SidebarAnimateur() {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-purple-800">
-        {open && <span className="text-lg font-bold">JASPE Academy</span>}
+        {open && 
+          <span className="text-lg font-bold">
+            <Link
+              className="flex items-center gap-2 text-xl font-bold  transition-transform hover:scale-105"
+              href="/">
+                  <FaGraduationCap className="text-white" />
+                  Jaspe <span className="font-light  text-white">Academy</span>
+            </Link>   
+          </span>            
+        
+        }
         <button
           onClick={() => setOpen(!open)}
           className="text-white focus:outline-none"
@@ -75,19 +88,15 @@ export default function SidebarAnimateur() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-purple-800">
-        <Link
-          href="/logout"
-          className="flex items-center text-red-300 hover:text-white transition"
-        >
+      <div className="flex items-center text-red-300 hover:text-white transition p-4 border-t border-purple-800" onClick={logout}>
+
           <FaSignOutAlt className="text-xl" />
           {open && <span className="ml-3">Déconnexion</span>}
-        </Link>
       </div>
 
       {open && (
         <div className="p-4 text-sm text-center text-purple-200">
-          Merci de guider les talents de demain 🚀
+          Merci de guider les talents de demain 
         </div>
       )}
     </div>

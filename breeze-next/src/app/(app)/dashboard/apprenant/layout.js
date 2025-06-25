@@ -8,7 +8,7 @@ export default function ApprenantLayout({ children }) {
         <SidebarApprenant />
       </div>
       
-      <main className="flex-1 p-4 bg-gray-100">{children}</main>
+      <main className="flex-1 p-4 bg-gray-100 mt-24">{children}</main>
     </div>
   );
 }

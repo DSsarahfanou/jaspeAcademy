@@ -1,124 +1,69 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-//import AOS from 'aos';
-//import 'aos/dist/aos.css';
-
-const equipements = [
-  {
-    id: 1,
-    module: "Module 1 - Introduction aux réseaux",
-    description: "Équipements essentiels pour comprendre les bases des réseaux informatiques",
-    items: [
-      {
-        id: 101,
-        nom: "Switch Cisco Catalyst 2960",
-        prix: 120000,
-        prixAffiche: "120 000 FCFA",
-        image: "/image/switch.jpeg",
-        description: "Switch de niveau 2 idéal pour l'apprentissage des concepts de commutation"
-      },
-      {
-        id: 102,
-        nom: "Routeur MikroTik RB750Gr3",
-        prix: 45000,
-        prixAffiche: "45 000 FCFA",
-        image: "/image/router.jpeg",
-        description: "Routeur performant pour les exercices de routage et configuration réseau"
-      },
-      {
-        id: 103,
-        nom: "Routeur MikroTik RB750Gr3",
-        prix: 45000,
-        prixAffiche: "45 000 FCFA",
-        image: "/image/router.jpeg",
-        description: "Routeur performant pour les exercices de routage et configuration réseau"
-      },
-    ],
-  },
-  {
-    id: 2,
-    module: "Module 2 - Sécurité réseau",
-    description: "Matériel spécialisé pour apprendre à sécuriser vos infrastructures",
-    items: [
-      {
-        id: 201,
-        nom: "Pare-feu FortiGate 30E",
-        prix: 250000,
-        prixAffiche: "250 000 FCFA",
-        image: "/image/fortigate.jpg",
-        description: "Solution de sécurité tout-en-un pour protéger votre réseau"
-      },
-      {
-        id: 202,
-        nom: "Pare-feu FortiGate 30E",
-        prix: 250000,
-        prixAffiche: "250 000 FCFA",
-        image: "/image/fortigate.jpg",
-        description: "Solution de sécurité tout-en-un pour protéger votre réseau"
-      },
-      {
-        id: 203,
-        nom: "Pare-feu FortiGate 30E",
-        prix: 250000,
-        prixAffiche: "250 000 FCFA",
-        image: "/image/fortigate.jpg",
-        description: "Solution de sécurité tout-en-un pour protéger votre réseau"
-      },
-    ],
-  },
-  // Vous pouvez ajouter d'autres modules
-];
+import { FaShoppingCart, FaSearch, FaTimes, FaPlus, FaMinus, FaTrash, FaInfoCircle, FaChevronRight } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { openKkiapayWidget, addKkiapayListener, removeKkiapayListener } from 'kkiapay';
 
 export default function Equipements() {
-  const [activeModule, setActiveModule] = useState(1);
+  const [activeFormation, setActiveFormation] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [panier, setPanier] = useState([]);
   const [panierOuvert, setPanierOuvert] = useState(false);
-  const [animation, setAnimation] = useState(false);
+  const [formations, setFormations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    //AOS.init({ duration: 1000, once: true });
+    const fetchFormations = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/formations');
+        if (!response.ok) throw new Error('Erreur lors de la récupération des données');
+        const data = await response.json();
+        if (data.status === "success") {
+          setFormations(data.data);
+          setActiveFormation(data.data[0]?.id || null);
+        }
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchFormations();
   }, []);
 
-  // Calculer le total du panier
-  const totalPanier = panier.reduce((total, item) => total + (item.prix * item.quantite), 0);
+  const totalPanier = panier.reduce((total, item) => total + (item.price * item.quantite), 0);
 
-  // Ajouter un article au panier
-  const ajouterAuPanier = (article) => {
+  const ajouterAuPanier = (equipment) => {
     setPanier(panierActuel => {
-      // Vérifier si l'article est déjà dans le panier
-      const articleExiste = panierActuel.find(item => item.id === article.id);
+      const articleExiste = panierActuel.find(item => item.id === equipment.id);
       
       if (articleExiste) {
-        // Augmenter la quantité
         return panierActuel.map(item => 
-          item.id === article.id 
+          item.id === equipment.id 
             ? { ...item, quantite: item.quantite + 1 } 
             : item
         );
       } else {
-        // Ajouter le nouvel article
-        return [...panierActuel, { ...article, quantite: 1 }];
+        return [...panierActuel, { 
+          ...equipment, 
+          quantite: 1,
+          image: equipment.image ? `http://127.0.0.1:8000/storage/${equipment.image}` : '/default-equipment.jpg'
+        }];
       }
     });
-    
-    // Animation du panier
-    setAnimation(true);
-    setTimeout(() => setAnimation(false), 700);
   };
 
-  // Supprimer un article du panier
   const supprimerDuPanier = (articleId) => {
-    setPanier(panierActuel => 
-      panierActuel.filter(item => item.id !== articleId)
-    );
+    setPanier(panierActuel => panierActuel.filter(item => item.id !== articleId));
   };
 
-  // Mettre à jour la quantité d'un article
   const updateQuantite = (articleId, nouvelleQuantite) => {
     if (nouvelleQuantite < 1) return;
-    
     setPanier(panierActuel => 
       panierActuel.map(item => 
         item.id === articleId 
@@ -128,293 +73,398 @@ export default function Equipements() {
     );
   };
 
-  // Procéder au paiement
-  const procederAuPaiement = () => {
-    // Ici, vous connecterez votre API de paiement
-    console.log("Données pour l'API de paiement:", {
-      articles: panier,
-      total: totalPanier,
-      date: new Date().toISOString()
+  const openPayment = () => {
+    openKkiapayWidget({
+      amount: totalPanier,
+      api_key: "a2b855004b5811f0a02f6db188e41c43",
+      sandbox: true,
+      phone: "97000000",
+      position: "right"
     });
-    
-    alert("Redirection vers la page de paiement...");
-    // Exemple de redirection: window.location.href = '/paiement?total=' + totalPanier;
+
+    addKkiapayListener('success', (response) => {
+      console.log('Payment successful!', response);
+      setPanier([]);
+      setPanierOuvert(false);
+      // Vous pouvez ajouter une notification de succès ici
+    });
+
+    addKkiapayListener('error', (error) => {
+      console.error('Payment error:', error);
+      // Gérer les erreurs de paiement
+    });
+
+    addKkiapayListener('cancel', () => {
+      console.log('Payment cancelled');
+    });
   };
 
-  const filteredEquipements = equipements.map(module => ({
-    ...module,
-    items: module.items.filter(item =>
-      item.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  })).filter(module => module.items.length > 0);
+  const filteredFormations = formations
+    .map(formation => ({
+      ...formation,
+      equipments: formation.equipments?.filter(equipment =>
+        equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (equipment.description && equipment.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    }))
+    .filter(formation => formation.equipments?.length > 0);
 
-  // Formater le prix en FCFA
   const formaterPrix = (prix) => {
-    return prix.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA";
+    return new Intl.NumberFormat('fr-FR').format(prix) + ' FCFA';
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="p-4 text-red-600 bg-red-100 rounded-lg">
+          Erreur: {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
-<>
-    <div className="container px-4 py-10 mx-auto mt-10 bg-">
-      {/* En-tête avec titre et barre de recherche */}
-      <div className="mb-10 text-center" data-aos="fade-down">
-        <h1 className="mb-3 text-4xl font-bold text-blue-600">Équipements Recommandés</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300">Découvrez le matériel professionnel pour chaque module de formation</p>
+    <div className="px-4 py-6 mt-20 bg-gradient-to-b from-blue-50 to-white min-h-screen max-w-7xl">
+      {/* En-tête améliorée */}
+      <motion.div 
+        className="mb-12 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h1 className="mb-4 text-4xl font-bold text-blue-800 md:text-5xl">
+          Équipements Recommandés
+        </h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Découvrez le matériel professionnel nécessaire pour suivre nos formations dans les meilleures conditions
+        </p>
 
-        <div className="flex justify-center mt-6">
-          <div className="relative w-full max-w-md">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg className="w-5 h-5 p-1 text-white bg-blue-500 rounded-full" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387zM10 16a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
-              </svg>
-            </span>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mt-8"
+        >
+          <div className="relative w-full max-w-xl">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+              <FaSearch className="text-gray-400 text-lg" />
+            </div>
             <input
               type="text"
-              className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full py-3 pl-12 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
               placeholder="Rechercher un équipement..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
+              >
+                <FaTimes className="text-lg" />
+              </button>
+            )}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      {/* Bouton du panier */}
-      <div className="fixed z-50 top-4 right-4">
+      {/* Bouton du panier amélioré */}
+      <motion.div 
+        className="fixed z-50 top-20 right-4 md:right-8"
+        whileHover={{ scale: 1.1 }}
+      >
         <button 
-          className={`bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg flex items-center ${animation ? 'animate-bounce' : ''}`}
+          className={`relative p-4 text-white bg-blue-600 rounded-full shadow-xl hover:bg-blue-700 transition-all duration-300 flex items-center justify-center ${
+            panier.length > 0 ? 'ring-2 ring-blue-400 ring-offset-2' : ''
+          }`}
           onClick={() => setPanierOuvert(!panierOuvert)}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
+          <FaShoppingCart className="w-6 h-6" />
           {panier.length > 0 && (
-            <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full -top-2 -right-2">
+            <span className="absolute flex items-center justify-center w-7 h-7 text-sm font-bold text-white bg-red-500 rounded-full -top-2 -right-2">
               {panier.reduce((total, item) => total + item.quantite, 0)}
             </span>
           )}
         </button>
-      </div>
+      </motion.div>
 
-      {/* Mini-panier */}
-      {panierOuvert && (
-        <div className="fixed right-0 z-40 overflow-hidden bg-white border border-blue-100 rounded-lg shadow-xl top-16 w-80">
-          <div className="flex items-center justify-between p-4 font-semibold text-white bg-blue-600">
-            <span>Votre panier</span>
-            <button onClick={() => setPanierOuvert(false)}>×</button>
-          </div>
-          
-          <div className="p-4 overflow-y-auto max-h-96">
-            {panier.length === 0 ? (
-              <p className="py-4 text-center text-gray-500">Votre panier est vide</p>
-            ) : (
-              <>
-                {panier.map((article) => (
-                  <div key={article.id} className="flex items-center justify-between py-2 border-b">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{article.nom}</p>
-                      <p className="text-sm font-semibold text-blue-600">{formaterPrix(article.prix)}</p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        className="flex items-center justify-center w-6 h-6 text-blue-600 bg-blue-100 rounded-full"
-                        onClick={() => updateQuantite(article.id, article.quantite - 1)}
-                      >-</button>
-                      <span className="w-6 text-sm text-center">{article.quantite}</span>
-                      <button 
-                        className="flex items-center justify-center w-6 h-6 text-blue-600 bg-blue-100 rounded-full"
-                        onClick={() => updateQuantite(article.id, article.quantite + 1)}
-                      >+</button>
-                      <button 
-                        className="ml-2 text-red-500"
-                        onClick={() => supprimerDuPanier(article.id)}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="pt-2 mt-4 border-t">
-                  <div className="flex justify-between font-semibold">
-                    <span>Total:</span>
-                    <span className="text-blue-600">{formaterPrix(totalPanier)}</span>
+      {/* Panier amélioré */}
+      <AnimatePresence>
+        {panierOuvert && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="fixed right-0 z-40 w-full max-w-md bg-white border border-gray-200 rounded-lg shadow-2xl top-24 sm:right-6"
+          >
+            <div className="flex items-center justify-between p-4 font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-t-lg">
+              <span className="text-lg">Votre panier</span>
+              <button 
+                onClick={() => setPanierOuvert(false)}
+                className="p-1 rounded-full hover:bg-blue-700"
+              >
+                <FaTimes className="text-lg" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto max-h-[70vh]">
+              {panier.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <FaShoppingCart className="mx-auto text-5xl text-gray-300 mb-4" />
+                  <p className="text-gray-500 text-lg">Votre panier est vide</p>
+                  <p className="text-gray-400 text-sm mt-2">Ajoutez des équipements pour commencer</p>
+                </div>
+              ) : (
+                <>
+                  <div className="divide-y divide-gray-100">
+                    {panier.map((article) => (
+                      <div key={article.id} className="flex items-center py-4">
+                        <img 
+                          src={article.image} 
+                          alt={article.name} 
+                          className="w-16 h-16 mr-4 rounded-lg object-cover border border-gray-200"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{article.name}</p>
+                          <p className="text-sm font-semibold text-blue-600">
+                            {formaterPrix(article.price)}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center ml-4 space-x-2">
+                          <button 
+                            className="flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors"
+                            onClick={() => updateQuantite(article.id, article.quantite - 1)}
+                          >
+                            <FaMinus size={12} />
+                          </button>
+                          <span className="w-8 text-base font-medium text-center">{article.quantite}</span>
+                          <button 
+                            className="flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 transition-colors"
+                            onClick={() => updateQuantite(article.id, article.quantite + 1)}
+                          >
+                            <FaPlus size={12} />
+                          </button>
+                          <button 
+                            className="ml-2 p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                            onClick={() => supprimerDuPanier(article.id)}
+                          >
+                            <FaTrash size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                   
-                  <button 
-                    className="w-full py-2 mt-4 text-white transition duration-300 transform bg-blue-600 rounded-md shadow-md hover:bg-blue-700 hover:-translate-y-1"
-                    onClick={procederAuPaiement}
-                  >
-                    Procéder au paiement
-                  </button>
+                  <div className="sticky bottom-0 pt-4 mt-4 bg-white border-t border-gray-200">
+                    <div className="flex justify-between text-lg font-bold mb-4">
+                      <span>Total:</span>
+                      <span className="text-blue-600">{formaterPrix(totalPanier)}</span>
+                    </div>
+                    
+                    <motion.button 
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      className="w-full py-4 text-lg font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all flex items-center justify-center"
+                      onClick={openPayment}
+                    >
+                      Payer maintenant
+                      <FaChevronRight className="ml-2" />
+                    </motion.button>
+                  </div>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Contenu principal */}
+      <div className="max-w-7xl mx-auto">
+        {searchTerm ? (
+          <div className="space-y-12">
+            {filteredFormations.length > 0 ? (
+              filteredFormations.map((formation) => (
+                <motion.div 
+                  key={formation.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h2 className="pb-3 mb-8 text-2xl font-bold text-gray-800 border-b border-gray-200">
+                    {formation.name}
+                  </h2>
+                  <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {formation.equipments.map((equipment) => (
+                      <EquipementCard 
+                        key={equipment.id} 
+                        equipment={equipment} 
+                        ajouterAuPanier={ajouterAuPanier}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="py-12 text-center"
+              >
+                <div className="inline-flex items-center px-6 py-4 text-lg text-blue-800 bg-blue-100 rounded-xl">
+                  <FaInfoCircle className="mr-3 text-xl" />
+                  Aucun équipement ne correspond à votre recherche.
                 </div>
-              </>
+              </motion.div>
             )}
           </div>
-        </div>
-      )}
-
-      {searchTerm ? (
-        // Affichage des résultats de recherche
-        <div className="space-y-10">
-          {filteredEquipements.length > 0 ? (
-            filteredEquipements.map((module) => (
-              <div key={module.id} data-aos="fade-up">
-                <h2 className="pb-2 mb-4 text-2xl font-semibold text-gray-700 border-b dark:text-gray-200">{module.module}</h2>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  {module.items.map((item) => (
-                    <EquipementCard 
-                      key={item.id} 
-                      item={item} 
-                      ajouterAuPanier={ajouterAuPanier}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="py-10 text-center">
-              <div className="relative px-4 py-3 text-blue-700 bg-blue-100 rounded" role="alert">
-                Aucun équipement ne correspond à votre recherche.
+        ) : (
+          <>
+            {/* Onglets améliorés */}
+            <div className="mb-8 overflow-x-auto">
+              <div className="flex pb-2 space-x-2 border-b border-gray-200">
+                {formations.map((formation) => (
+                  <motion.button
+                    key={formation.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`px-6 py-3 rounded-t-lg font-semibold whitespace-nowrap transition-all duration-300 ${
+                      activeFormation === formation.id
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-blue-50'
+                    }`}
+                    onClick={() => setActiveFormation(formation.id)}
+                  >
+                    {formation.name}
+                  </motion.button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
-      ) : (
-        // Affichage normal avec onglets
-        <>
-          <div className="mb-6 overflow-x-auto">
-            <div className="flex pb-2 space-x-4 border-b">
-              {equipements.map((module) => (
-                <button
-                  key={module.id}
-                  className={`px-4 py-2 rounded-t-md font-medium whitespace-nowrap transition duration-300 ${
-                    activeModule === module.id
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-blue-100'
-                  }`}
-                  onClick={() => setActiveModule(module.id)}
+
+            {/* Contenu des formations */}
+            {formations.map((formation) => (
+              formation.id === activeFormation && (
+                <motion.div 
+                  key={formation.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {module.module.split(' - ')[0]}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div className="mb-10 text-center">
+                    <h2 className="text-3xl font-bold text-gray-800">
+                      {formation.name}
+                    </h2>
+                    {formation.formation_details && (
+                      <p className="mt-3 text-lg text-gray-600 max-w-3xl mx-auto">
+                        {formation.formation_details}
+                      </p>
+                    )}
+                  </div>
 
-          {equipements.map((module) => (
-            module.id === activeModule && (
-              <div key={module.id} data-aos="fade-up">
-                <div className="mb-6 text-center">
-                  <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200">{module.module}</h2>
-                  <p className="text-gray-600 dark:text-gray-300">{module.description}</p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  {module.items.map((item) => (
-                    <EquipementCard 
-                      key={item.id} 
-                      item={item} 
-                      ajouterAuPanier={ajouterAuPanier}
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-          ))}
-        </>
-      )}
+                  {formation.equipments?.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {formation.equipments.map((equipment) => (
+                        <EquipementCard 
+                          key={equipment.id} 
+                          equipment={equipment} 
+                          ajouterAuPanier={ajouterAuPanier}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center bg-gray-50 rounded-xl">
+                      <div className="inline-flex items-center px-6 py-4 text-lg text-gray-600 bg-white rounded-lg shadow-sm">
+                        <FaInfoCircle className="mr-3 text-blue-500" />
+                        Aucun équipement disponible pour cette formation.
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )
+            ))}
+          </>
+        )}
+      </div>
     </div>
-</>
   );
 }
 
-function EquipementCard({ item, ajouterAuPanier }) {
+function EquipementCard({ equipment, ajouterAuPanier }) {
   const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <div
-      className="overflow-hidden transition duration-300 transform bg-white rounded-lg shadow-md dark:bg-gray-800 hover:-translate-y-1 hover:shadow-lg"
-      data-aos="zoom-in"
+    <motion.div
+      whileHover={{ y: -8 }}
+      className="overflow-hidden bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100"
     >
-      <div className="relative">
+      <div className="relative h-56 overflow-hidden group">
         <img
-          src={item.image}
-          alt={item.nom}
-          className="object-cover w-full h-48"
+          src={equipment.image ? `http://127.0.0.1:8000/storage/${equipment.image}` : '/default-equipment.jpg'}
+          alt={equipment.name}
+          className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => {
+            e.target.src = '/default-equipment.jpg';
+          }}
         />
-        <div className="absolute right-0 px-3 py-1 text-sm font-semibold text-white bg-blue-600 shadow-md top-2 rounded-l-md">
-          {item.prixAffiche}
+        <div className="absolute right-0 px-4 py-1 text-sm font-bold text-white bg-blue-600 shadow-lg top-3 rounded-l-full">
+          {new Intl.NumberFormat('fr-FR').format(equipment.price)} FCFA
         </div>
       </div>
 
-      <div className="p-4">
-        <h5 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white">{item.nom}</h5>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
-      </div>
+      <div className="p-5">
+        <h5 className="mb-3 text-xl font-bold text-gray-800">{equipment.name}</h5>
+        {equipment.description && (
+          <p className="mb-4 text-gray-600 line-clamp-2">
+            {equipment.description}
+          </p>
+        )}
 
-      <div className="flex items-center justify-between px-4 pb-4">
-        <button 
-          onClick={() => setShowDetails(!showDetails)}
-          className="px-2 text-sm font-medium text-blue-600 transition duration-300 border-blue-300 border-solid rounded-full hover:underline hover:text-white"
-        >
-           {showDetails ? 'Masquer les détails' : 'Voir les détails'}
-        </button>
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            <FaInfoCircle className="mr-2" />
+            {showDetails ? 'Masquer détails' : 'Voir détails'}
+          </button>
 
-        <button 
-          onClick={() => ajouterAuPanier(item)}
-          className="flex items-center px-4 py-2 space-x-1 text-sm font-medium text-white transition duration-300 bg-blue-600 rounded-full hover:bg-blue-700"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <span>Ajouter au panier</span>
-        </button>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => ajouterAuPanier(equipment)}
+            className="flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FaShoppingCart className="mr-2" />
+            Ajouter
+          </motion.button>
+        </div>
       </div>
 
       {showDetails && (
-        <div className="px-4 pb-4 border-t border-blue-100 bg-blue-50 dark:bg-blue-900 dark:border-blue-800">
-          <h6 className="mb-2 font-semibold text-blue-800 dark:text-blue-200">Spécifications techniques:</h6>
-          <ul className="text-sm text-gray-700 list-disc list-inside dark:text-gray-300">
-            <li>Garantie: 12 mois</li>
-            <li>Support technique inclus</li>
-            <li>Livraison disponible</li>
-            <li>Documentation complète fournie</li>
-          </ul>
+        <div className="px-5 pb-5 border-t border-gray-100 bg-gray-50">
+          <h6 className="mb-3 font-semibold text-gray-800">Détails techniques:</h6>
+          <div className="text-sm text-gray-700 space-y-2">
+            {equipment.details ? (
+              <p className="whitespace-pre-line">{equipment.details}</p>
+            ) : (
+              <p className="text-gray-500">Aucun détail technique disponible</p>
+            )}
+            <div className="pt-2 mt-2 border-t border-gray-200">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium">Disponibilité:</span> {equipment.quantity > 0 ? 
+                  <span className="text-green-600">En stock ({equipment.quantity} unités)</span> : 
+                  <span className="text-red-600">Rupture de stock</span>}
+              </p>
+            </div>
+          </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

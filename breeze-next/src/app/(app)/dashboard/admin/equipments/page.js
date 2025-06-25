@@ -122,7 +122,7 @@ export default function EquipmentPage() {
           <div key={eq.id} className="p-4 bg-white rounded shadow">
             {eq.picture ? (
               <img
-                src={`http://localhost:8000/storage/${eq.image}`}
+                src={`http://localhost:8000/storage/${eq.image  }`}
                 alt={eq.name}
                 className="object-cover w-full h-40 mb-4 rounded"
               />
