@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui/react": "^1.4.2",
     "axios": "^0.21.4",
+    "framer-motion": "^12.19.1",
     "kkiapay": "^2.0.26",
     "motion": "^12.18.1",
     "next": "^14.2.10",

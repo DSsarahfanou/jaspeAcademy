@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name', 
@@ -38,14 +39,6 @@ class User extends Authenticatable
     }
 
 
-    //     public function userable(): MorphTo
-    // {
-    //     return $this->morphTo();
-    // }
-    // public function getProfileAttribute()
-    // {
-    //     return $this->userable;
-    // }
 
 
 
@@ -64,11 +57,6 @@ class User extends Authenticatable
 
 
 
-    // public function formations()
-    // {
-    //     return $this->hasMany(Formation::class, 'user_id');
-    // }
-
 
 
     public function profile()
@@ -81,10 +69,6 @@ class User extends Authenticatable
         }
     }
 
-    // public function getPictureUrlAttribute()
-    // {
-    //     return $this->picture ? asset('storage/' . $this->picture) : null;
-    // }
 
 
     public function getProfileAttribute()

@@ -1,107 +1,101 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const quizQuestions = [
-  {
-    question: "Quel est le rôle d’un routeur ?",
-    options: ["Connecter des périphériques", "Gérer le trafic réseau", "Stocker des fichiers", "Afficher une page web"],
-    answer: "Gérer le trafic réseau",
-  },
-  {
-    question: "Quelle est la couche 3 du modèle OSI ?",
-    options: ["Transport", "Réseau", "Session", "Application"],
-    answer: "Réseau",
-  },
-  {
-    question: "Que signifie HTTP ?",
-    options: ["HyperText Transfer Protocol", "High Transfer Protocol", "HyperText Transmission Program", "Host Transfer Terminal Protocol"],
-    answer: "HyperText Transfer Protocol",
-  },
-  {
-    question: "Quel est le port standard pour HTTPS ?",
-    options: ["80", "20", "443", "21"],
-    answer: "443",
-  },
-  {
-    question: "Quel outil est utilisé pour diagnostiquer une connectivité réseau ?",
-    options: ["ping", "cd", "mkdir", "ipconfig"],
-    answer: "ping",
-  },
-];
-
-export default function QuizPage() {
+export default function QuizPage({ params }) {
+  const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
-  const handleOptionChange = (index, selectedOption) => {
-    setAnswers({ ...answers, [index]: selectedOption });
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Récupérer le token d'authentification
+        const response = await fetch(`http://localhost:8000/api/formations/${params.formationId}/quiz`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setQuiz(data.quiz);
+        } else {
+          setError(data.error);
+        }
+      } catch (err) {
+        setError('Erreur lors de la récupération du quiz');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuiz();
+  }, [params.formationId]);
+
+  const handleAnswerChange = (questionId, optionId) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  const handleSubmit = () => {
-    let correct = 0;
-    quizQuestions.forEach((q, i) => {
-      if (answers[i] === q.answer) correct++;
-    });
-
-    const calculatedScore = Math.round((correct / quizQuestions.length) * 100);
-    setScore(calculatedScore);
-    setSubmitted(true);
-
-    // Redirection vers attestation si score >= 80%
-    if (calculatedScore >= 80) {
-      setTimeout(() => {
-        router.push("attestation");
-      }, 3000); // délai pour afficher le score avant de rediriger
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/formations/${params.formationId}/quiz/submit`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          quiz_id: quiz.id,
+          answers,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        router.push(`/formations/${params.formationId}/quiz/result?score=${data.score}&attestation=${data.attestation_path}`);
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError('Erreur lors de la soumission du quiz');
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-blue-800">Quiz de fin de formation</h1>
+  if (loading) return <div>Chargement...</div>;
+  if (error) return <div>Erreur : {error}</div>;
+  if (!quiz) return <div>Aucun quiz trouvé</div>;
 
-      {!submitted ? (
-        <>
-          {quizQuestions.map((q, index) => (
-            <div key={index} className="mb-6">
-              <p className="font-medium">{index + 1}. {q.question}</p>
-              {q.options.map((opt, i) => (
-                <label key={i} className="block mt-1">
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">{quiz.title}</h1>
+      <form onSubmit={handleSubmit}>
+        {quiz.questions.map((question) => (
+          <div key={question.id} className="mb-6">
+            <h2 className="text-xl font-semibold">{question.title}</h2>
+            {question.options.map((option) => (
+              <div key={option.id} className="mt-2">
+                <label>
                   <input
                     type="radio"
-                    name={`question-${index}`}
-                    value={opt}
-                    onChange={() => handleOptionChange(index, opt)}
+                    name={`question_${question.id}`}
+                    value={option.id}
+                    checked={answers[question.id] == option.id}
+                    onChange={() => handleAnswerChange(question.id, option.id)}
                     className="mr-2"
                   />
-                  {opt}
+                  {option.title}
                 </label>
-              ))}
+              </div>
+            ))}
             </div>
-          ))}
-
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Soumettre mes réponses
-          </button>
-        </>
-      ) : (
-        <div className="text-center">
-          <p className="text-2xl font-semibold">
-            Votre score est : <span className={score >= 80 ? "text-green-600" : "text-red-600"}>{score}%</span>
-          </p>
-          {score >= 80 ? (
-            <p className="mt-2 text-green-700">Félicitations ! Vous allez recevoir votre attestation...</p>
-          ) : (
-            <p className="mt-2 text-red-700">Désolé, vous devez obtenir au moins 80% pour valider la formation.</p>
-          )}
-        </div>
-      )}
+        ))}
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+          Soumettre le quiz
+        </button>
+      </form>
     </div>
   );
 }

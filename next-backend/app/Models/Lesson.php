@@ -13,7 +13,6 @@ class Lesson extends Model
         'module_id',
         'title',
         'contents',
-        'video',
     ];
         public function module()
     {

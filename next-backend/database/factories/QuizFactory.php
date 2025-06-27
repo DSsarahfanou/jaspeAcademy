@@ -2,22 +2,21 @@
 
 namespace Database\Factories;
 
+use App\Models\Quiz;
+use App\Models\Formation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Faker\Factory as Faker;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\quiz>
- */
 class QuizFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Quiz::class;
+
     public function definition(): array
     {
+        $faker = Faker::create('en_NG');
         return [
-            //
+            'formation_id' => Formation::factory()->create()->id,
+            'title' => $faker->sentence(4),
         ];
     }
 }

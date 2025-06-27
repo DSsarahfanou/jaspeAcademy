@@ -12,6 +12,7 @@
         use App\Http\Controllers\ModuleController;
         use App\Http\Controllers\FormationController;
         use App\Http\Controllers\UserController;
+        use App\Http\Controllers\QuizController;
 
 
 
@@ -66,6 +67,12 @@
 
 
 
+
+        // Routes protégées par l'authentification
+        //Route::middleware('auth:sanctum')->group(function () {
+            Route::get('/formations/{formationId}/quiz', [QuizController::class, 'showRandomQuiz']);
+            Route::post('/formations/{formationId}/quiz/submit', [QuizController::class, 'submitQuiz']);
+        //});
 
 
 

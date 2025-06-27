@@ -16,19 +16,17 @@ class Formation extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'prerequisites',
         'price',
         'formation_details',
-        'picture',
-        'categorie', 
+        'picture', 
     ];
 
     // Fin
 
 
-    // Début : 
-    // Tu as déjà créée ces relations. Je n'ai pas étudié la valabilité de leur présence
     public function students()
     {
         return
@@ -87,6 +85,17 @@ class Formation extends Model
     
     
     // Fin : 
+
+
+
+    // Début :
+    // Ajout de la relation entre Formation et Quiz : 
+    // Signification :  Une formation contient zero ou plusieurs quizzes. 
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
+    //Fin
 }
 
 

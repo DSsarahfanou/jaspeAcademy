@@ -10,6 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'student_id',
         'sum',
         'path_facture',
         'order_status',

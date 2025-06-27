@@ -16,4 +16,14 @@ class Meeting extends Model
         'status',
         'date',
     ];
+
+
+    // Début :
+    // Ajout de la relation entre  FormationStudent et Meetings: 
+    // Signification :  Une FormationStudent contient zero ou plusieurs Meetings. 
+    public function formationStudent()
+    {
+        return $this->hasMany(Meeting::class);
+    }
+    //Fin
 }

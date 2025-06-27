@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->integer('sum');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('path_facture');
-            $table->boolean('order_status');
+            $table->string('path_facture')->nullable();
+            $table->boolean('order_status')->nullable();
             $table->timestamps();
         });
     }
