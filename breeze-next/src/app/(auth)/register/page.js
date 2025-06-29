@@ -312,7 +312,7 @@ export default function Register() {
                                         name="state"
                                         value={formData.state}
                                         onChange={handleChange}
-                                        icon={FaMapMarkerAlt}
+                                        icon={<FaMapMarkerAlt/>}
                                         label="Département *"
                                         id="state"
                                         placeholder="Ex : Littoral"
@@ -327,7 +327,7 @@ export default function Register() {
                                         name="city"
                                         value={formData.city}
                                         onChange={handleChange}
-                                        icon={FaMapMarkerAlt}
+                                        icon={<FaMapMarkerAlt/>}
                                         label="Ville *"
                                         id="city"
                                         placeholder="Ex : Cotonou"
@@ -343,7 +343,7 @@ export default function Register() {
                                         name="address_line"
                                         value={formData.address_line}
                                         onChange={handleChange}
-                                        icon={FaMapMarkerAlt}
+                                        icon={<FaMapMarkerAlt/>}
                                         label="Adresse *"
                                         id="address_line"
                                         placeholder="Adresse complète"
@@ -385,7 +385,7 @@ export default function Register() {
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        icon={FaLock}
+                                        icon={<FaLock/>}
                                         label="Mot de passe *"
                                         id="password"
                                         placeholder="Mot de passe"
@@ -406,7 +406,7 @@ export default function Register() {
                                         name="password_confirmation"
                                         value={formData.password_confirmation}
                                         onChange={handleChange}
-                                        icon={FaLock}
+                                        icon={<FaLock/>}
                                         label="Confirmation du mot de passe *"
                                         id="password_confirmation"
                                         placeholder="Confirmation"

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Formation;
 use App\Models\FormationStudent;
 use App\Models\Quiz;
+use App\Models\Option;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -17,19 +19,23 @@ class QuizController extends Controller
      */
     public function showRandomQuiz($formationId)
     {
-        // Vérifier que l'utilisateur est authentifié et est un étudiant
-        if (!   Auth::check() || !Auth::user()->hasRole('student')) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+        // // Vérifier que l'utilisateur est authentifié et est un étudiant
+        //  if (!Auth::check() || !Auth::user()->hasRole('student')) {
+        //      return response()->json(['error' => 'Non autorisé'], 403);
+        //  }
+        
+        // // Vérifier que l'étudiant est inscrit à la formation
+        // $formationStudent = FormationStudent::where('formation_id', $formationId)
+        //     ->where('student_id', Auth::id())
+        //     ->first();
 
-        // Vérifier que l'étudiant est inscrit à la formation
-        $formationStudent = FormationStudent::where('formation_id', $formationId)
-            ->where('student_id', Auth::id())
-            ->first();
+        // if (!$formationStudent) {
+        //     // return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formationkkkk ', $formationId, Auth::id()], 403);
+        //     return response()->json([
+        //     'error' => "Vous n'êtes pas inscrit à la formation ID: $formationId avec l'utilisateur ID: " . Auth::id(),
+        // ], 403);
 
-        if (!$formationStudent) {
-            return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formation'], 403);
-        }
+        // }
 
         // Récupérer un quiz aléatoire pour la formation
         $quiz = Quiz::where('formation_id', $formationId)
@@ -54,18 +60,18 @@ class QuizController extends Controller
     {
         // Valider les données envoyées
         $request->validate([
-            'answers' => 'required|array', // Tableau des réponses (question_id => option_id)
+            'answers' => 'required', // Tableau des réponses (question_id => option_id)
         ]);
 
-        // Vérifier que l'utilisateur est authentifié et est un étudiant
-        if (!Auth::check() || !Auth::user()->hasRole('student')) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+        // // Vérifier que l'utilisateur est authentifié et est un étudiant
+        // if (!Auth::check() || !Auth::user()->hasRole('student')) {
+        //     return response()->json(['error' => 'Non autorisé'], 403);
+        // }
 
-        // Vérifier que l'étudiant est inscrit à la formation
-        $formationStudent = FormationStudent::where('formation_id', $formationId)
-            ->where('student_id', Auth::id())
-            ->first();
+        // // Vérifier que l'étudiant est inscrit à la formation
+        // $formationStudent = FormationStudent::where('formation_id', $formationId)
+        //     ->where('student_id', Auth::id())
+        //     ->first();
 
         if (!$formationStudent) {
             return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formation'], 403);
@@ -82,8 +88,8 @@ class QuizController extends Controller
         // Calculer la note
         $score = 0;
         $totalQuestions = $quiz->questions->count();
-        foreach ($request->answers as $questionId => $optionId) {
-            $option = \App\Models\Option::where('id', $optionId)
+        foreach ($request->answers as $questionId =>     $optionId) {
+            $option = Option::where('id', $optionId)
                 ->where('question_id', $questionId)
                 ->first();
             if ($option && $option->answer) {

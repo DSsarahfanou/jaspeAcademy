@@ -4,7 +4,9 @@ const axios = Axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        // Authorization: `Bearer ${token}`,
     },
+
     withCredentials: true,
     withXSRFToken: true,
     maxContentLength: 1000 * 1024 * 1024, // 100MB

@@ -1,13 +1,208 @@
-//src/hooks/auth.js
-'use client' 
-import useSWR from 'swr'
-import axios from '/src/lib/axios'
-import { useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+// //src/hooks/auth.js
+// 'use client' 
+// import useSWR from 'swr'
+// import axios from '/src/lib/axios'
+// import { useEffect } from 'react'
+// import { useRouter, useParams } from 'next/navigation'
+
+// export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
+//     const router = useRouter()
+//     const params = useParams()
+
+//     const { data: user, error, mutate } = useSWR('/api/user', () =>
+//         axios
+//             .get('/api/user')
+//             .then(res => res.data)
+//             .catch(error => {
+//                 if (error.response?.status === 409) {
+//                     router.push('/verify-email')
+//                 }
+//                 throw error
+//             })
+//     )
+
+//     const getRedirectPath = (role) => {
+//         const paths = {
+//             admin: '/dashboard/admin',
+//             teacher: '/dashboard/animateur',
+//             student: '/dashboard/apprenant'
+//         }
+//         return paths[role] 
+        
+//         //|| '/dashboard/apprenant'
+//     }
+
+//     const login = async ({ setErrors, setStatus, ...props }) => {
+//         try {
+//             await axios.get('/sanctum/csrf-cookie')
+//             const loginResponse = await axios.post('/login', props)
+//             if (loginResponse.ok) {
+//                 localStorage.setItem('token', data.token);
+//                 router.push('/formations');
+//             }
+            
+//             // Récupère l'utilisateur avec son rôle
+//             const userResponse = await axios.get('/api/user')
+//             await mutate()
+            
+//             const role = userResponse.data.role
+//             // || 'student'
+//             router.push(getRedirectPath(role))
+//         } catch (error) {
+//             if (error.response?.status === 422) {
+//                 setErrors(error.response.data.errors)
+//             }
+//             throw error
+//         }
+//     }
+
+//     const csrf = () => axios.get('/sanctum/csrf-cookie')
+
+// {/*    const register = async ({ setErrors, ...props }) => {
+//         await csrf()
+
+//         setErrors([])
+
+//         axios
+//             .post('/register', props)
+//             .then(() => mutate())
+//             router.push(getRedirectPath('role'))
+//             .catch(error => {
+//                 if (error.response.status !== 422) throw error
+
+//                 setErrors(error.response.data.errors)
+//         }
+    
+//     )
+//     }
+// */}
+//     const register = async ({ setErrors, data }) => {
+//         await csrf();
+//         setErrors([]);
+    
+//         try {
+//             await axios.post('/register', data, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
+    
+//             await mutate();
+    
+//             // Récupère l'utilisateur pour connaître son rôle
+//             const userResponse = await axios.get('/api/user');
+//             const role = userResponse.data.role || 'student';
+//             router.push(getRedirectPath(role));
+//         } catch (error) {
+//             if (error.response?.status === 422) {
+//                 setErrors(error.response.data.errors);
+//             } else {
+//                 throw error;
+//             }
+//         }
+//     };
+    
+
+//     const forgotPassword = async ({ setErrors, setStatus, email }) => {
+//         await csrf()
+
+//         setErrors([])
+//         setStatus(null)
+
+//         axios
+//             .post('/forgot-password', { email })
+//             .then(response => setStatus(response.data.status))
+//             .catch(error => {
+//                 if (error.response.status !== 422) throw error
+
+//                 setErrors(error.response.data.errors)
+//             })
+//     }
+
+//     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
+//         await csrf()
+
+//         setErrors([])
+//         setStatus(null)
+
+//         axios
+//             .post('/reset-password', { token: params.token, ...props })
+//             .then(response =>
+//                 router.push('/login?reset=' + btoa(response.data.status)),
+//             )
+//             .catch(error => {
+//                 if (error.response.status !== 422) throw error
+
+//                 setErrors(error.response.data.errors)
+//             })
+//     }
+
+//     const resendEmailVerification = ({ setStatus }) => {
+//         axios
+//             .post('/email/verification-notification')
+//             .then(response => setStatus(response.data.status))
+//     }
+
+//     const logout = async () => {
+//         if (!error) {
+//             await axios.post('/logout').then(() => mutate())
+//         }
+
+//         window.location.pathname = '/login'
+//     }
+    
+
+//     useEffect(() => {
+//         if (middleware === 'guest' && user && redirectIfAuthenticated) {
+//             axios.get('/api/user')
+//                 .then(res => {
+//                     const role = res.data.role || 'student'
+//                     router.push(getRedirectPath(role))
+//                 })
+//         }
+
+//         if (middleware === 'auth' && error) {
+//             logout()
+//         }
+//     }, [user, error])
+
+//     return {
+//         user,
+//         register,
+//         login,
+//         forgotPassword,
+//         resetPassword,
+//         resendEmailVerification,
+//         logout,
+//     }
+// }
+
+
+
+
+
+'use client';
+
+import useSWR from 'swr';
+import axios from '/src/lib/axios';
+import { useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+
+// Configurer l'intercepteur axios pour ajouter le token à chaque requête
+axios.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => Promise.reject(error)
+);
 
 export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
-    const router = useRouter()
-    const params = useParams()
+    const router = useRouter();
+    const params = useParams();
 
     const { data: user, error, mutate } = useSWR('/api/user', () =>
         axios
@@ -15,77 +210,56 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             .then(res => res.data)
             .catch(error => {
                 if (error.response?.status === 409) {
-                    router.push('/verify-email')
+                    router.push('/verify-email');
                 }
-                throw error
+                throw error;
             })
-    )
+    );
 
     const getRedirectPath = (role) => {
         const paths = {
             admin: '/dashboard/admin',
             teacher: '/dashboard/animateur',
-            student: '/dashboard/apprenant'
-        }
-        return paths[role] 
-        
-        //|| '/dashboard/apprenant'
-    }
+            student: '/dashboard/apprenant',
+        };
+        return paths[role] || '/dashboard/apprenant';
+    };
 
     const login = async ({ setErrors, setStatus, ...props }) => {
         try {
-            await axios.get('/sanctum/csrf-cookie')
-            const loginResponse = await axios.post('/login', props)
+            await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+            const loginResponse = await axios.post('/login', props, { withCredentials: true });
+            const data = loginResponse.data;
+
+            localStorage.setItem('token', data.token);
             
-            // Récupère l'utilisateur avec son rôle
-            const userResponse = await axios.get('/api/user')
-            await mutate()
-            
-            const role = userResponse.data.role
-            // || 'student'
-            router.push(getRedirectPath(role))
+            // Récupérer l'utilisateur avec son rôle
+            await mutate();
+            const role = data.user.role || 'student';
+            router.push(getRedirectPath(role));
         } catch (error) {
             if (error.response?.status === 422) {
-                setErrors(error.response.data.errors)
+                setErrors(error.response.data.errors);
             }
-            throw error
+            throw error;
         }
-    }
+    };
 
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
-
-{/*    const register = async ({ setErrors, ...props }) => {
-        await csrf()
-
-        setErrors([])
-
-        axios
-            .post('/register', props)
-            .then(() => mutate())
-            router.push(getRedirectPath('role'))
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-        }
-    
-    )
-    }
-*/}
     const register = async ({ setErrors, data }) => {
-        await csrf();
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
         setErrors([]);
-    
+
         try {
             await axios.post('/register', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                withCredentials: true,
             });
-    
+
             await mutate();
-    
-            // Récupère l'utilisateur pour connaître son rôle
+
+            // Récupérer l'utilisateur pour connaître son rôle
             const userResponse = await axios.get('/api/user');
             const role = userResponse.data.role || 'student';
             router.push(getRedirectPath(role));
@@ -97,70 +271,71 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             }
         }
     };
-    
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        await csrf()
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        setErrors([]);
+        setStatus(null);
 
-        setErrors([])
-        setStatus(null)
-
-        axios
-            .post('/forgot-password', { email })
-            .then(response => setStatus(response.data.status))
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
-    }
+        try {
+            const response = await axios.post('/forgot-password', { email });
+            setStatus(response.data.status);
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                throw error;
+            }
+        }
+    };
 
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        setErrors([]);
+        setStatus(null);
 
-        setErrors([])
-        setStatus(null)
+        try {
+            const response = await axios.post('/reset-password', { token: params.token, ...props });
+            router.push('/login?reset=' + btoa(response.data.status));
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                throw error;
+            }
+        }
+    };
 
-        axios
-            .post('/reset-password', { token: params.token, ...props })
-            .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
-            )
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
-    }
-
-    const resendEmailVerification = ({ setStatus }) => {
-        axios
-            .post('/email/verification-notification')
-            .then(response => setStatus(response.data.status))
-    }
+    const resendEmailVerification = async ({ setStatus }) => {
+        try {
+            const response = await axios.post('/email/verification-notification');
+            setStatus(response.data.status);
+        } catch (error) {
+            throw error;
+        }
+    };
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/logout').then(() => mutate())
+            await axios.post('/logout').then(() => mutate());
         }
-
-        window.location.pathname = '/login'
-    }
-    
+        localStorage.removeItem('token');
+        window.location.pathname = '/login';
+    };
 
     useEffect(() => {
         if (middleware === 'guest' && user && redirectIfAuthenticated) {
             axios.get('/api/user')
                 .then(res => {
-                    const role = res.data.role || 'student'
-                    router.push(getRedirectPath(role))
-                })
+                    const role = res.data.role || 'student';
+                    router.push(getRedirectPath(role));
+                });
         }
 
         if (middleware === 'auth' && error) {
-            logout()
+            logout();
         }
-    }, [user, error])
+    }, [user, error, middleware, redirectIfAuthenticated]);
 
     return {
         user,
@@ -170,6 +345,5 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         resetPassword,
         resendEmailVerification,
         logout,
-    }
-}
-
+    };
+};

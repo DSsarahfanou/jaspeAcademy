@@ -13,11 +13,12 @@ export default function QuizPage({ params }) {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const token = localStorage.getItem('token'); // Récupérer le token d'authentification
-        const response = await fetch(`http://localhost:8000/api/formations/${params.formationId}/quiz`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const token = localStorage.getItem('token');
+        console.log('Token envoyé:', token, params); // Pour débogage
+        const response = await fetch(`http://localhost:8000/api/formations/${params.id}/quiz`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
         const data = await response.json();
         if (response.ok) {
@@ -32,7 +33,7 @@ export default function QuizPage({ params }) {
       }
     };
     fetchQuiz();
-  }, [params.formationId]);
+  }, [params.id]);
 
   const handleAnswerChange = (questionId, optionId) => {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
@@ -40,22 +41,31 @@ export default function QuizPage({ params }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("avant try");
     try {
+      console.log("avant token");
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/formations/${params.formationId}/quiz/submit`, {
+      console.log(token);
+      const response = await axios.get(`http://localhost:8000/api/formations/${params.id}/quiz/submit`, {
+        
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        
         body: JSON.stringify({
           quiz_id: quiz.id,
           answers,
         }),
       });
+      console.log("après response");
+      console.log(response);
       const data = await response.json();
+      console.log(data);
+      console.log("data");
       if (response.ok) {
-        router.push(`/formations/${params.formationId}/quiz/result?score=${data.score}&attestation=${data.attestation_path}`);
+        router.push(`/mes-formations/${params.id}/quiz/result?score=${data.score}&attestation=${data.attestation_path}`);
       } else {
         setError(data.error);
       }

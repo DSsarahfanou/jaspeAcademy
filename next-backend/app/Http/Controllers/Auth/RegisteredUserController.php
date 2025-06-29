@@ -6,12 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+// use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-
-use Illuminate\Validation\Rules;
+use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpFoundation\Response;
 
 class RegisteredUserController extends Controller
 {
@@ -34,7 +33,7 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed'],
-            'role' => ['required', 'string'],
+            'role' => ['nullable', 'string', 'in:student,teacher,admin'], // Rôle facultatif
         ]);
     
         // Gérer l'image si elle est présente
@@ -43,7 +42,7 @@ class RegisteredUserController extends Controller
             $picturePath = $request->file('picture')->store('profile-pictures', 'public');
         }
     
-        // Création de l'utilisateur avec toutes les données
+        // Création de l'utilisateur
         $user = User::create([
             'name' => $request->input('name'),
             'surname' => $request->input('surname'),
@@ -54,14 +53,25 @@ class RegisteredUserController extends Controller
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
-            'role' => $request->input('role'),
+            'role' => $request->input('role', 'student'), // Par défaut 'student'
         ]);
+    
+        // Assigner le rôle via Spatie
+        $role = $request->input('role', 'student');
+        if (!Role::where('name', $role)->exists()) {
+            Role::create(['name' => $role]);
+        }
+        $user->assignRole($role);
     
         event(new Registered($user));
         Auth::login($user);
     
-        return response()->json();
-    }
+        // Générer un token Sanctum
+        $token = $user->createToken('auth_token')->plainTextToken;
     
-
+        return response()->json([
+            'user' => $user->only(['id', 'name', 'email', 'role']),
+            'token' => $token,
+        ], 201);
+    }
 }

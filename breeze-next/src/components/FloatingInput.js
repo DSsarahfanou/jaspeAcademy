@@ -1,3 +1,4 @@
+import InputError from './InputError';
 import Label from '/src/components/Label'
 const FloatingInput = ({ icon, label, type = "text", name, value, onChange, error }) => (
   <div>
