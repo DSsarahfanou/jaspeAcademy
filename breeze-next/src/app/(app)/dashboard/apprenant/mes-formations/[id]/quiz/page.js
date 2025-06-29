@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+  
 
 export default function QuizPage({ params }) {
   const [quiz, setQuiz] = useState(null);
@@ -39,40 +41,55 @@ export default function QuizPage({ params }) {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("avant try");
-    try {
-      console.log("avant token");
-      const token = localStorage.getItem('token');
-      console.log(token);
-      const response = await axios.get(`http://localhost:8000/api/formations/${params.id}/quiz/submit`, {
-        
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        
-        body: JSON.stringify({
-          quiz_id: quiz.id,
-          answers,
-        }),
-      });
-      console.log("après response");
-      console.log(response);
-      const data = await response.json();
-      console.log(data);
-      console.log("data");
-      if (response.ok) {
-        router.push(`/mes-formations/${params.id}/quiz/result?score=${data.score}&attestation=${data.attestation_path}`);
-      } else {
-        setError(data.error);
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setError(null); // pour réinitialiser une éventuelle erreur précédente
+      console.log("avant try");
+
+      try {
+        // 1. Obtenir le cookie CSRF
+        await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`, {
+          withCredentials: true
+        });
+
+        console.log("avant token");
+        const token = localStorage.getItem('token');
+        console.log(token);
+
+        // 2. Soumettre les réponses du quiz
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formations/${params.id}/quiz/submit`,
+          {
+            quiz_id: quiz.id,
+            answers,
+          },
+          {
+            withCredentials: true,
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        console.log("après response");
+        console.log(response);
+
+        const data = response.data;
+
+        router.push(`/dashboard/apprenant/mes-formations/${params.id}/quiz/result?score=${data.score}&attestation=${encodeURIComponent(data.attestation_path)}`);
+
+      } catch (err) {
+        console.error(err);   
+        if (err.response && err.response.data && err.response.data.error) {
+          setError(err.response.data.error);
+        } else {
+          setError('Erreur lors de la soumission du quiz');
+        }
       }
-    } catch (err) {
-      setError('Erreur lors de la soumission du quiz');
-    }
-  };
+    };
+
 
   if (loading) return <div>Chargement...</div>;
   if (error) return <div>Erreur : {error}</div>;
