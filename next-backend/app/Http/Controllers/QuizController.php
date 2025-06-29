@@ -24,18 +24,18 @@ class QuizController extends Controller
         //      return response()->json(['error' => 'Non autorisé'], 403);
         //  }
         
-        // // Vérifier que l'étudiant est inscrit à la formation
-        // $formationStudent = FormationStudent::where('formation_id', $formationId)
-        //     ->where('student_id', Auth::id())
-        //     ->first();
+        // //Vérifier que l'étudiant est inscrit à la formation
+         $formationStudent = FormationStudent::where('formation_id', $formationId)
+             ->where('student_id', Auth::id())
+             ->first();
 
-        // if (!$formationStudent) {
-        //     // return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formationkkkk ', $formationId, Auth::id()], 403);
-        //     return response()->json([
-        //     'error' => "Vous n'êtes pas inscrit à la formation ID: $formationId avec l'utilisateur ID: " . Auth::id(),
-        // ], 403);
+         if (!$formationStudent) {
+              return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formationkkkk ', $formationId, Auth::id()], 403);
+             return response()->json([
+             'error' => "Vous n'êtes pas inscrit à la formation ID: $formationId avec l'utilisateur ID: " . Auth::id(),
+         ], 403);
 
-        // }
+         }
 
         // Récupérer un quiz aléatoire pour la formation
         $quiz = Quiz::where('formation_id', $formationId)
@@ -64,14 +64,14 @@ class QuizController extends Controller
         ]);
 
         // // Vérifier que l'utilisateur est authentifié et est un étudiant
-        // if (!Auth::check() || !Auth::user()->hasRole('student')) {
-        //     return response()->json(['error' => 'Non autorisé'], 403);
-        // }
+         if (!Auth::check() || !Auth::user()->hasRole('student')) {
+             return response()->json(['error' => 'Non autorisé'], 403);
+         }
 
         // // Vérifier que l'étudiant est inscrit à la formation
-        // $formationStudent = FormationStudent::where('formation_id', $formationId)
-        //     ->where('student_id', Auth::id())
-        //     ->first();
+         $formationStudent = FormationStudent::where('formation_id', $formationId)
+             ->where('student_id', Auth::id())
+             ->first();
 
         if (!$formationStudent) {
             return response()->json(['error' => 'Vous n\'êtes pas inscrit à cette formation'], 403);
@@ -107,7 +107,7 @@ class QuizController extends Controller
         // Générer l'attestation PDF
         $formation = Formation::findOrFail($formationId);
         $student = Auth::user();
-        $pdf = Pdf::loadView('pdf.attestation', [
+        $pdf = Pdf::loadView('attestation', [
             'student_name' => $student->name . ' ' . $student->surname,
             'formation_name' => $formation->name,
             'score' => $percentageScore,
@@ -116,18 +116,19 @@ class QuizController extends Controller
 
         // Enregistrer le PDF
         $pdfPath = 'attestations/attestation_' . $student->id . '_' . $formationId . '_' . now()->timestamp . '.pdf';
-        Storage::disk('public')->put($pdfPath, $pdf->output());
+        Storage::disk('public')->put($pdfPath, $pdf->output()); 
 
         // Mettre à jour le champ attestation dans formation_students
         $formationStudent->update([
-            'attestation' => true,
-            'path_paiement' => $formationStudent->path_paiement ?? $pdfPath, // Réutiliser le champ pour stocker le chemin de l'attestation
+            'attestation' => $pdfPath, // on stocke le chemin du fichier PDF
         ]);
+
 
         return response()->json([
             'message' => 'Quiz soumis avec succès, attestation générée',
             'score' => $percentageScore,
-            'attestation_path' => Storage::url($pdfPath),
+            'attestation_path' => asset('storage/' . $pdfPath),
+
         ], 200);
     }
 }

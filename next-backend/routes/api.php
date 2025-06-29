@@ -168,12 +168,12 @@
 
         // Routes protégées par l'authentification
         Route::middleware('auth:sanctum')->group(function () {
-
+            Route::get('/formations/{formationId}/quiz', [QuizController::class, 'showRandomQuiz']);
+            Route::post('/formations/{formationId}/quiz/submit', [QuizController::class, 'submitQuiz']);
+            Route::post('/formation-student', [FormationStudentController::class, 'store']);
      
         });
-                    Route::get('/formations/{formationId}/quiz', [QuizController::class, 'showRandomQuiz']);
-            Route::post('/formations/{formationId}/quiz/submit', [QuizController::class, 'submitQuiz']);
-       Route::post('/formation-student', [FormationStudentController::class, 'store']);
+
 
 
        
