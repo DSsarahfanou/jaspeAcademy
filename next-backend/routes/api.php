@@ -171,8 +171,17 @@
             Route::get('/formations/{formationId}/quiz', [QuizController::class, 'showRandomQuiz']);
             Route::post('/formations/{formationId}/quiz/submit', [QuizController::class, 'submitQuiz']);
             Route::post('/formation-student', [FormationStudentController::class, 'store']);
+
+                Route::post('/formation_student', [FormationStudentController::class, 'store']);
+    Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
+    Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
+    Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
+    Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
+
+                                                                
      
         });
+        
 
 
 
@@ -182,6 +191,20 @@
         Route::get('/student/{id}/formations', [FormationStudentController::class, 'formationsByStudent']);
         Route::get('/formation/{id}/students', [FormationStudentController::class, 'studentsByFormation']);
 
+
+
+
+
+
+
+
+
+
+    Route::post('/formation_student', [FormationStudentController::class, 'store']);
+    Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
+    Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
+    Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
+    Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
 
 
                 ?>

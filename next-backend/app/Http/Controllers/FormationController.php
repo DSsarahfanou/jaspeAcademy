@@ -1,5 +1,5 @@
 <?php
-
+// next-backend\app\Http\Controllers\FormationController.php
 namespace App\Http\Controllers;
 
 use App\Models\Equipment;

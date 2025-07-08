@@ -9,6 +9,7 @@ export const useFormations = () => {
     axios.get('/api/formations').then(res => res.data.data)
   )
 
+  
   const [loading, setLoading] = useState(false)
 
   const deleteFormation = async (id) => {

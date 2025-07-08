@@ -5,6 +5,8 @@ const axios = Axios.create({
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         // Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
     },
 
     withCredentials: true,
@@ -14,3 +16,4 @@ const axios = Axios.create({
 })
 
 export default axios
+

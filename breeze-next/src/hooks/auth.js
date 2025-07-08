@@ -188,23 +188,14 @@ import axios from '/src/lib/axios';
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-// Configurer l'intercepteur axios pour ajouter le token à chaque requête
-axios.interceptors.request.use(
-    config => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    error => Promise.reject(error)
-);
 
 export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     const router = useRouter();
     const params = useParams();
 
+    
     const { data: user, error, mutate } = useSWR('/api/user', () =>
+        
         axios
             .get('/api/user')
             .then(res => res.data)
@@ -227,15 +218,12 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
     const login = async ({ setErrors, setStatus, ...props }) => {
         try {
-            await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
-            const loginResponse = await axios.post('/login', props, { withCredentials: true });
-            const data = loginResponse.data;
+            await axios.get('/sanctum/csrf-cookie'); // Obligatoire AVANT login
 
-            localStorage.setItem('token', data.token);
-            
-            // Récupérer l'utilisateur avec son rôle
-            await mutate();
-            const role = data.user.role || 'student';
+            const loginResponse = await axios.post('/login', props); // Pas besoin de withCredentials ici
+
+            await mutate(); // recharge les infos de l'utilisateur
+            const role = loginResponse.data.user.role || 'student';
             router.push(getRedirectPath(role));
         } catch (error) {
             if (error.response?.status === 422) {
@@ -244,6 +232,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             throw error;
         }
     };
+
 
     const register = async ({ setErrors, data }) => {
         await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
@@ -319,23 +308,21 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         if (!error) {
             await axios.post('/logout').then(() => mutate());
         }
-        localStorage.removeItem('token');
         window.location.pathname = '/login';
     };
 
+
     useEffect(() => {
         if (middleware === 'guest' && user && redirectIfAuthenticated) {
-            axios.get('/api/user')
-                .then(res => {
-                    const role = res.data.role || 'student';
-                    router.push(getRedirectPath(role));
-                });
+            const role = user?.role || 'student';
+            router.push(getRedirectPath(role));
         }
 
         if (middleware === 'auth' && error) {
             logout();
         }
     }, [user, error, middleware, redirectIfAuthenticated]);
+
 
     return {
         user,

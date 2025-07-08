@@ -10,12 +10,17 @@ class FormationStudent extends Model
         'formation_id',
         'student_id',
         'progression',
+        'completed_lessons',
         'score',
         'attestation',
         'path_paiement',
         'request_internership',
         'request_status',
 
+    ];
+
+         protected $casts = [
+        'completed_lessons' => 'array', // Laravel traite automatiquement le JSON comme un tableau
     ];
 
         public function formation()
