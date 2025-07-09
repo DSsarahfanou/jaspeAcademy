@@ -128,6 +128,10 @@
                 'name' => $user->name,
                 'surname' => $user->surname,
                 'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'birth_date' => $user->birth_date,
+                'gender' => $user->gender,
                 'role' => $user->role,
                 'picture_url' => $user->picture_url,
             ]);
@@ -172,11 +176,12 @@
             Route::post('/formations/{formationId}/quiz/submit', [QuizController::class, 'submitQuiz']);
             Route::post('/formation-student', [FormationStudentController::class, 'store']);
 
-                Route::post('/formation_student', [FormationStudentController::class, 'store']);
-    Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
-    Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
-    Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
-    Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
+            Route::post('/formation_student', [FormationStudentController::class, 'store']);
+            Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
+            Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
+            Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
+            Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
+            Route::post('/formation_student/{formation_id}/internship-request', [FormationStudentController::class, 'storeInternshipRequest']);
 
                                                                 
      

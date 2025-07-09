@@ -74,6 +74,8 @@ use App\Models\Formation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class FormationStudentController extends Controller
 {
@@ -194,4 +196,91 @@ class FormationStudentController extends Controller
             'data' => $formationStudent
         ]);
     }
+
+
+
+
+// 6. Traiter la demande de stage
+    public function storeInternshipRequest(Request $request, $formation_id)
+    {
+        $student_id = $request->user()->id;
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'surname' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'birth_date' => 'required|date',
+            'gender' => 'required|string',
+            'isInCountry' => 'required|boolean',
+            'hasRelatives' => 'required_if:isInCountry,false|boolean',
+            'canProvideAccommodation' => 'required_if:hasRelatives,false|boolean',
+            'durationMonths' => 'required|integer|min:1',
+        ]);
+
+        $formationStudent = FormationStudent::where('formation_id', $formation_id)
+                                           ->where('student_id', $student_id)
+                                           ->first();
+
+        if (!$formationStudent) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucune association trouvée pour cette formation et cet étudiant'
+            ], 404);
+        }
+
+        // Vérifier si la formation est terminée (progression = 100)
+        if ($formationStudent->progression < 100) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Vous devez terminer la formation avant de soumettre une demande de stage'
+            ], 403);
+        }
+
+        // Vérifier si une demande existe déjà
+        if ($formationStudent->request_internership) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une demande de stage a déjà été soumise pour cette formation'
+            ], 400);
+        }
+
+        // Générer le PDF
+        $data = $request->only([
+            'name', 'surname', 'email', 'phone', 'address', 'birth_date', 'gender',
+            'isInCountry', 'hasRelatives', 'canProvideAccommodation', 'durationMonths'
+        ]);
+        $data['formation_name'] = Formation::findOrFail($formation_id)->name;
+
+        $pdf = Pdf::loadView('internship_request', $data);
+        $pdfPath = "internship_requests/{$formation_id}_{$student_id}_" . time() . ".pdf";
+        Storage::disk('public')->put($pdfPath, $pdf->output());
+
+        // Mettre à jour la table formation_student
+        $formationStudent->update([
+            'request_internership' => $pdfPath,
+            'request_status' => 'pending',
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Demande de stage soumise avec succès',
+            'data' => $formationStudent
+        ], 201);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

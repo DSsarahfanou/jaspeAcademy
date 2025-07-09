@@ -7,11 +7,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Link from 'next/link';
 
-export default function QuizResultPage() {
+export default function QuizResultPage({ params }) {
   const searchParams = useSearchParams();
   const score = searchParams.get('score');
   const attestationPath = searchParams.get('attestation');
   const numericScore = score ? parseInt(score) : 0;
+  console.log(params.id);
 
   useEffect(() => {
     if (numericScore >= 80) {
@@ -78,6 +79,18 @@ export default function QuizResultPage() {
               </a>
             </div>
           )}
+
+          {numericScore >= 50 && (
+            <div className="mt-4">
+              <Link 
+                href={`/dashboard/apprenant/mes-formations/${params.id}/demande-stage`} 
+                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Faire une demande de stage
+              </Link>
+            </div>
+          )}
+
 
           <div className="mt-8">
             <Link 

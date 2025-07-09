@@ -1,133 +1,252 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { FaBriefcase, FaHome } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Link from 'next/link';
+import axios from '/src/lib/axios';
 
-export default function DemandeStagePage() {
-  const { id } = useParams(); // id de la formation
+export default function DemandeStage({ params }) {
+  const searchParams = useSearchParams();
+  const formationId = params.id;
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    nom: '',
-    telephone: '',
-    email: '',
-    pays: '',
-    situation: '',
-    periode: '',
+    isInCountry: true,
+    hasRelatives: false,
+    canProvideAccommodation: false,
+    durationMonths: 1,
   });
-  const [files, setFiles] = useState({
-    attestation: null,
-    lettre: null,
-    carteIdentite: null,
-    acteNaissance: null,
-  });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Récupérer les informations de l'utilisateur
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+          await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`, {
+            withCredentials: true,
+          });
 
-  const handleFileChange = (e) => {
-    setFiles({ ...files, [e.target.name]: e.target.files[0] });
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user`,
+            { withCredentials: true }
+          );
+
+        console.log(response);
+        const data = response.data;
+        setUserData(data); // ✔️ c'est ici qu'on met les vraies données
+
+        setFormData(prev => ({
+          ...prev,
+          name: data.name,
+          surname: data.surname,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          birth_date: data.birth_date,
+          gender: data.gender,
+        }));
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!formationId) {
+      toast.error('ID de formation manquant');
+      setLoading(false);
+    } else {
+      fetchUserData();
+    }
+  }, [formationId]);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess(false);
-
-    const data = new FormData();
-    data.append('formation_id', id);
-    data.append('nom', formData.nom);
-    data.append('telephone', formData.telephone);
-    data.append('email', formData.email);
-    data.append('pays', formData.pays);
-    data.append('situation', formData.situation);
-    data.append('periode', formData.periode);
-    data.append('attestation', files.attestation);
-    data.append('lettre', files.lettre);
-    data.append('carteIdentite', files.carteIdentite);
-    data.append('acteNaissance', files.acteNaissance);
-
     try {
-      const response = await fetch('http://localhost:8000/api/demande-stage', {
-        method: 'POST',
-        body: data,
-      });
-
-      if (!response.ok) throw new Error('Échec de l\'envoi');
-
-      setSuccess(true);
-    } catch (err) {
-      setError('Erreur lors de l\'envoi de la demande.');
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formation_student/${formationId}/internship-request`, formData,);
+      console.log(formData);
+      toast.success('Demande de stage soumise avec succès !');
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!formationId) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-red-500 text-xl">Erreur : ID de formation manquant</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 max-w-2xl mx-auto bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-4">📄 Demande de stage</h1>
-
-      {error && <p className="text-red-600 mb-4">❌ {error}</p>}
-      {success && <p className="text-green-600 mb-4">✅ Demande envoyée avec succès !</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-
-        <input type="text" name="nom" placeholder="Nom complet"
-          value={formData.nom} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required />
-
-        <input type="text" name="telephone" placeholder="Téléphone"
-          value={formData.telephone} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required />
-
-        <input type="email" name="email" placeholder="Email"
-          value={formData.email} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required />
-
-        <input type="text" name="pays" placeholder="Pays"
-          value={formData.pays} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required />
-
-        <select name="situation" value={formData.situation} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required>
-          <option value="">Situation familiale</option>
-          <option value="célibataire_sans_enfant">Célibataire sans enfant</option>
-          <option value="célibataire_avec_enfant">Célibataire avec enfant</option>
-          <option value="marié">Marié(e)</option>
-        </select>
-
-        <input type="text" name="periode" placeholder="Période souhaitée (ex: juillet - août)"
-          value={formData.periode} onChange={handleChange}
-          className="w-full border px-3 py-2 rounded" required />
-
-        <label className="block">
-          Attestation en PDF :
-          <input type="file" name="attestation" onChange={handleFileChange}
-            accept="application/pdf" className="mt-1" required />
-        </label>
-
-        <label className="block">
-          Lettre de demande de stage :
-          <input type="file" name="lettre" onChange={handleFileChange}
-            accept="application/pdf" className="mt-1" required />
-        </label>
-
-        <label className="block">
-          Carte d'identité :
-          <input type="file" name="carteIdentite" onChange={handleFileChange}
-            accept="application/pdf" className="mt-1" required />
-        </label>
-
-        <label className="block">
-          Acte de naissance :
-          <input type="file" name="acteNaissance" onChange={handleFileChange}
-            accept="application/pdf" className="mt-1" required />
-        </label>
-
-        <button type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          Envoyer la demande
-        </button>
-      </form>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Demande de stage</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Nom</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Prénom</label>
+            <input
+              type="text"
+              name="surname"
+              value={formData.surname || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Téléphone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Adresse</label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Date de naissance</label>
+            <input
+              type="text"
+              name="birth_date"
+              value={formData.birth_date || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Genre</label>
+            <input
+              type="text"
+              name="gender"
+              value={formData.gender || ''}
+              readOnly
+              className="w-full p-2 border rounded bg-blue-300 text-white "
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Êtes-vous dans le pays ?</label>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                name="isInCountry"
+                checked={formData.isInCountry}
+                onChange={handleInputChange}
+                className="mr-2"
+              />
+              Oui
+            </div>
+          </div>
+          {!formData.isInCountry && (
+            <>
+              <div>
+                <label className="block text-sm font-medium">Avez-vous des proches chez qui séjourner ?</label>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="hasRelatives"
+                    checked={formData.hasRelatives}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  Oui
+                </div>
+              </div>
+              {!formData.hasRelatives && (
+                <div>
+                  <label className="block text-sm font-medium">Pouvez-vous assurer votre propre hébergement ?</label>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="canProvideAccommodation"
+                      checked={formData.canProvideAccommodation}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    Oui
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          <div>
+            <label className="block text-sm font-medium">Durée du stage (en mois)</label>
+            <input
+              type="number"
+              name="durationMonths"
+              value={formData.durationMonths}
+              onChange={handleInputChange}
+              min="1"
+              className="w-full p-2 border rounded"
+            />
+          </div>
+          <div className="flex justify-between mt-6">
+            <Link
+              href="/"
+              className="inline-flex items-center px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              <FaHome className="mr-2" />
+              Retour
+            </Link>
+            <button
+              type="submit"
+              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              <FaBriefcase className="mr-2" />
+              Soumettre la demande
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
