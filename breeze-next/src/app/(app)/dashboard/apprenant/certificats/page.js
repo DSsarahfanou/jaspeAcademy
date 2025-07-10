@@ -1,80 +1,87 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { FaDownload, FaTrophy } from 'react-icons/fa'
+import { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Link from 'next/link';
+import { FaDownload } from 'react-icons/fa';
+import axios from '/src/lib/axios';
+import PdfPreview from '/src/components/PdfPreview';
 
-export default function MesCertificatsPage() {
-  const [certificats, setCertificats] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function StudentAttestations() {
+  const [attestations, setAttestations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCertificats = async () => {
+    const fetchAttestations = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/mes-certificats', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        const data = await res.json()
-        setCertificats(data)
-      } catch (error) {
-        console.error('Erreur lors de la récupération des certificats', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+        await axios.get('/sanctum/csrf-cookie');
 
-    fetchCertificats()
-  }, [])
+        const response = await axios.get('/api/student/attestations');
+        setAttestations(response.data.data);
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Erreur lors de la récupération des attestations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttestations();
+  }, []);
+
+
+
+
+
+
+  
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 flex items-center text-gray-800">
-        <FaTrophy className="text-yellow-500 mr-2" />
-        Mes certificats
-      </h1>
-
-      {loading ? (
-        <p className="text-gray-500">Chargement...</p>
-      ) : certificats.length === 0 ? (
-        <p className="text-gray-500">Aucun certificat disponible pour l’instant.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {certificats.map((certif, index) => (
-            <div key={index} className="bg-white p-5 rounded-xl shadow-md border">
-              <h2 className="text-lg font-semibold text-blue-700 mb-2">
-                🎓 {certif.nom_formation}
-              </h2>
-
-              <p className="text-sm text-gray-600">
-                <strong>Date :</strong> {certif.date_obtention}
-              </p>
-              <p className="text-sm text-gray-600 mb-2">
-                <strong>Score :</strong> {certif.score}%
-              </p>
-
-              {/* Progression */}
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{ width: `${certif.score}%` }}
-                ></div>
-              </div>
-
-              {/* Bouton de téléchargement */}
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
+      <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-md p-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Mes attestations</h1>
+        {attestations.length === 0 ? (
+          <p className="text-gray-600">Aucune attestation disponible.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {attestations.map(attestation => (
               <a
-                href={certif.certificat_url}
+                key={attestation.id}
+                href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${attestation.attestation}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                className="block bg-white border rounded-lg shadow hover:shadow-md transition duration-200 overflow-hidden"
               >
-                <FaDownload className="mr-2" />
-                Télécharger PDF
+                <PdfPreview url={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/student/attestations/${attestation.id}/download`} />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">{attestation.formation_name}</h3>
+                  <p className="text-gray-600 text-sm mb-2">Émis le {new Date(attestation.created_at).toLocaleDateString()}</p>
+                  <button
+                    onClick={() => handleDownload(attestation.id, attestation.formation_name)}
+                    className="flex items-center text-green-600 hover:text-green-800 text-sm"
+                  >
+                    <FaDownload className="mr-2" /> Télécharger
+                  </button>
+                </div>
               </a>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+        <div className="mt-6">
+          <Link href="/student" className="inline-flex items-center px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            Retour
+          </Link>
         </div>
-      )}
+      </div>
     </div>
-  )
+  );
 }

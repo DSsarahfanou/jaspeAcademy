@@ -19,14 +19,14 @@ export default function QuizPage({ params }) {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-          await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`, {
-            withCredentials: true,
-          });
+                  await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`, {
+                    withCredentials: true,
+                  });
 
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formations/${params.id}/quiz`,
-            { withCredentials: true }
-          );
+                  const response = await axios.get(
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formations/${params.id}/quiz`,
+                    { withCredentials: true }
+                  );
 
           setQuiz(response.data.quiz);
         console.log(response);

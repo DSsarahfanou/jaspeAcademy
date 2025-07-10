@@ -1,204 +1,148 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { FaClock, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Link from 'next/link';
+import { FaEye, FaPlus } from 'react-icons/fa';
+import axios from '/src/lib/axios';
 
-export default function DemandeStagePage() {
-  const { id } = useParams(); // ID de la formation
-  const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    nom: '',
-    telephone: '',
-    email: '',
-    pays: '',
-    situation: '',
-    periode: '',
-  });
-
-  const [files, setFiles] = useState({
-    attestation: null,
-    lettre: null,
-    carteIdentite: null,
-    acteNaissance: null,
-  });
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [demandeExistante, setDemandeExistante] = useState(null);
+export default function StudentInternshipRequests() {
+  const [requests, setRequests] = useState([]);
+  const [formations, setFormations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkDemandeExistante = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/demande-stage/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setDemandeExistante(data);
-        }
+        // Initialiser le cookie CSRF
+        await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sanctum/csrf-cookie`, {
+          withCredentials: true,
+        });
+
+        // Récupérer les demandes de stage
+        const requestsResponse = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/student/internship-requests`, {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        setRequests(requestsResponse.data.data);
+
+        // Récupérer les informations de l'utilisateur
+        const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user`, {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        const userData = userResponse.data;
+
+        // Récupérer les formations de l'étudiant
+        const formationsResponse = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formation_student/${userData.id}/formations`, {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        // Filtrer les formations terminées sans demande de stage
+        const eligibleFormations = formationsResponse.data.formations.filter(f => 
+          f.pivot.progression === 100 && !f.pivot.request_internership
+        );
+        setFormations(eligibleFormations);
       } catch (error) {
-        console.error("Erreur de vérification de demande :", error);
+        toast.error(error.response?.data?.message || 'Erreur lors de la récupération des données');
+      } finally {
+        setLoading(false);
       }
     };
 
-    checkDemandeExistante();
-  }, [id]);
+    fetchData();
+  }, []);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e) => {
-    setFiles({ ...files, [e.target.name]: e.target.files[0] });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess(false);
-
-    const data = new FormData();
-    data.append('formation_id', id);
-    data.append('nom', formData.nom);
-    data.append('telephone', formData.telephone);
-    data.append('email', formData.email);
-    data.append('pays', formData.pays);
-    data.append('situation', formData.situation);
-    data.append('periode', formData.periode);
-    data.append('attestation', files.attestation);
-    data.append('lettre', files.lettre);
-    data.append('carteIdentite', files.carteIdentite);
-    data.append('acteNaissance', files.acteNaissance);
-
-    try {
-      const response = await fetch('http://localhost:8000/api/demande-stage', {
-        method: 'POST',
-        body: data,
-      });
-
-      if (!response.ok) throw new Error('Échec de l\'envoi');
-
-      setSuccess(true);
-
-      setTimeout(() => {
-        router.push('/dashboard/apprenant/mes-demandes');
-      }, 2000);
-    } catch (err) {
-      setError('Erreur lors de l\'envoi de la demande.');
-    }
-  };
-
-  const renderStatut = (statut) => {
-    switch (statut) {
-      case 'en_attente':
-        return (
-          <p className="flex items-center text-yellow-500">
-            <FaClock className="mr-2" /> En attente de validation
-          </p>
-        );
-      case 'accepte':
-        return (
-          <p className="flex items-center text-green-600">
-            <FaCheckCircle className="mr-2" /> Acceptée
-          </p>
-        );
-      case 'refuse':
-        return (
-          <p className="flex items-center text-red-600">
-            <FaTimesCircle className="mr-2" /> Refusée
-          </p>
-        );
-      default:
-        return null;
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 sm:p-6 max-w-2xl mx-auto bg-white rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">📄 Demande de stage</h1>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Mes demandes de stage</h1>
+        
+        {/* Liste des demandes existantes */}
+        <h2 className="text-xl font-semibold mb-4">Demandes soumises</h2>
+        {requests.length === 0 ? (
+          <p className="text-gray-600">Aucune demande de stage soumise.</p>
+        ) : (
+          <table className="w-full border-collapse mb-8">
+            <thead>
+              <tr className="bg-blue-100">
+                <th className="p-2 text-left">Formation</th>
+                <th className="p-2 text-left">Statut</th>
+                <th className="p-2 text-left">Date</th>
+                <th className="p-2 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {requests.map(request => (
+                <tr key={request.id} className="border-b">
+                  <td className="p-2">{request.formation_name}</td>
+                  <td className="p-2">
+                    <span className={
+                      request.request_status === 'approved' ? 'text-green-600' :
+                      request.request_status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+                    }>
+                      {request.request_status === 'pending' ? 'En attente' :
+                       request.request_status === 'approved' ? 'Approuvé' : 'Rejeté'}
+                    </span>
+                  </td>
+                  <td className="p-2">{new Date(request.created_at).toLocaleDateString()}</td>
+                  <td className="p-2">
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/internship-requests/${request.id}/download`}
+                      className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      <FaEye />
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
-      {demandeExistante ? (
-        <div className="p-4 bg-gray-100 rounded space-y-4">
-          <p className="mb-2">Votre demande a déjà été soumise pour cette formation.</p>
-          {renderStatut(demandeExistante.statut)}
+        {/* Formations éligibles pour une nouvelle demande */}
+        <h2 className="text-xl font-semibold mb-4">Soumettre une nouvelle demande</h2>
+        {formations.length === 0 ? (
+          <p className="text-gray-600">Aucune formation terminée sans demande de stage.</p>
+        ) : (
+          <div className="space-y-4">
+            {formations.map(formation => (
+              <div key={formation.id} className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                <span>{formation.name}</span>
+                <Link
+                  href={`/demande-stage?formation_id=${formation.id}`}
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                >
+                  <FaPlus className="mr-2" />
+                  Demander un stage
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
 
-          {demandeExistante.statut === 'accepte' && (
-            <div className="mt-4">
-              <a
-                href={`/dashboard/apprenant/mon-stage/${id}`}
-                className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-              >
-                Voir mon stage
-              </a>
-            </div>
-          )}
+        <div className="mt-6">
+          <Link href="/student" className="inline-flex items-center px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            Retour
+          </Link>
         </div>
-      ) : (
-        <>
-          {error && <p className="text-red-600 mb-4">❌ {error}</p>}
-          {success && <p className="text-green-600 mb-4">✅ Demande envoyée avec succès !</p>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            <input type="text" name="nom" placeholder="Nom complet"
-              value={formData.nom} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required />
-
-            <input type="text" name="telephone" placeholder="Téléphone"
-              value={formData.telephone} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required />
-
-            <input type="email" name="email" placeholder="Email"
-              value={formData.email} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required />
-
-            <input type="text" name="pays" placeholder="Pays"
-              value={formData.pays} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required />
-
-            <select name="situation" value={formData.situation} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required>
-              <option value="">Situation familiale</option>
-              <option value="célibataire_sans_enfant">Célibataire sans enfant</option>
-              <option value="célibataire_avec_enfant">Célibataire avec enfant</option>
-              <option value="marié">Marié(e)</option>
-            </select>
-
-            <input type="text" name="periode" placeholder="Période souhaitée (ex: juillet - août)"
-              value={formData.periode} onChange={handleChange}
-              className="w-full border px-3 py-2 rounded" required />
-
-            <label className="block">
-              Attestation en PDF :
-              <input type="file" name="attestation" onChange={handleFileChange}
-                accept="application/pdf" className="mt-1" required />
-            </label>
-
-            <label className="block">
-              Lettre de demande de stage :
-              <input type="file" name="lettre" onChange={handleFileChange}
-                accept="application/pdf" className="mt-1" required />
-            </label>
-
-            <label className="block">
-              Carte d'identité :
-              <input type="file" name="carteIdentite" onChange={handleFileChange}
-                accept="application/pdf" className="mt-1" required />
-            </label>
-
-            <label className="block">
-              Acte de naissance :
-              <input type="file" name="acteNaissance" onChange={handleFileChange}
-                accept="application/pdf" className="mt-1" required />
-            </label>
-
-            <button type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-              Envoyer la demande
-            </button>
-          </form>
-        </>
-      )}
+      </div>
     </div>
   );
 }

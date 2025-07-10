@@ -76,6 +76,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InternshipRequestResponse;
+
+
 
 class FormationStudentController extends Controller
 {
@@ -200,7 +204,7 @@ class FormationStudentController extends Controller
 
 
 
-// 6. Traiter la demande de stage
+        // 6. Traiter la demande de stage
     public function storeInternshipRequest(Request $request, $formation_id)
     {
         $student_id = $request->user()->id;
@@ -254,7 +258,7 @@ class FormationStudentController extends Controller
         $data['formation_name'] = Formation::findOrFail($formation_id)->name;
 
         $pdf = Pdf::loadView('internship_request', $data);
-        $pdfPath = "internship_requests/{$formation_id}_{$student_id}_" . time() . ".pdf";
+        $pdfPath = "internship_requests/internship_{$formation_id}_{$student_id}_" . time() . ".pdf";
         Storage::disk('public')->put($pdfPath, $pdf->output());
 
         // Mettre à jour la table formation_student
@@ -273,6 +277,194 @@ class FormationStudentController extends Controller
 
 
 
+    // 7. Lister toutes les demandes de stage (admin)
+    public function listInternshipRequests(Request $request)
+    {
+        $status = $request->query('status'); // Filtre optionnel par statut
+
+        $query = FormationStudent::whereNotNull('request_internership')
+                                ->with(['student', 'formation']);
+
+        if ($status) {
+            $query->where('request_status', $status);
+        }
+
+        $requests = $query->get()->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'student_name' => $request->student->name . ' ' . $request->student->surname,
+                'student_email' => $request->student->email,
+                'formation_name' => $request->formation->name,
+                'request_status' => $request->request_status,
+                'request_internership' => $request->request_internership,
+                'created_at' => $request->created_at,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $requests
+        ]);
+    }
+
+    // 8. Télécharger le PDF d'une demande (admin)
+    public function downloadInternshipRequest($id)
+    {
+        $formationStudent = FormationStudent::findOrFail($id);
+
+        if (!$formationStudent->request_internership) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucune demande de stage trouvée'
+            ], 404);
+        }
+
+        $filePath = storage_path('app/public/'. $formationStudent->request_internership);
+        if (!file_exists($filePath)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Fichier PDF introuvable'
+            ], 404);
+        }
+
+        return response()->download($filePath, 'demande_stage_' . $id . '.pdf');
+    }
+
+    // 9. Approuver ou rejeter une demande (admin)
+    public function updateInternshipRequest(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'message' => 'nullable|string',
+        ]);
+
+        $formationStudent = FormationStudent::findOrFail($id);
+
+        if (!$formationStudent->request_internership) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucune demande de stage trouvée'
+            ], 404);
+        }
+
+        $formationStudent->update([
+            'request_status' => $request->status,
+        ]);
+
+        // Envoyer un email à l'étudiant
+        $student = $formationStudent->student;
+        $formation = $formationStudent->formation;
+        Mail::to($student->email)->send(new InternshipRequestResponse(
+            $student,
+            $formation,
+            $request->status,
+            $request->message
+        ));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Demande mise à jour avec succès et email envoyé'
+        ]);
+    }
+
+
+
+    // 10. Lister les demandes de stage de l'étudiant authentifié
+    public function listStudentInternshipRequests(Request $request)
+    {
+        $student_id = $request->user()->id;
+
+        $requests = FormationStudent::where('student_id', $student_id)
+                                   ->whereNotNull('request_internership')
+                                   ->with(['formation'])
+                                   ->get()
+                                   ->map(function ($request) {
+                                       return [
+                                           'id' => $request->id,
+                                           'formation_name' => $request->formation->name,
+                                           'request_status' => $request->request_status,
+                                           'request_internership' => $request->request_internership,
+                                           'created_at' => $request->created_at,
+                                       ];
+                                   });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $requests
+        ]);
+    }
+
+    // 11. Lister les attestations de l'étudiant authentifié
+    public function listStudentAttestations(Request $request)
+    {
+        $student_id = $request->user()->id;
+
+        $attestations = FormationStudent::where('student_id', $student_id)
+                                       ->whereNotNull('attestation') 
+                                       ->where('progression', 100)
+                                       ->with(['formation'])
+                                       ->get()
+                                       ->map(function ($attestation) {
+                                           return [
+                                               'id' => $attestation->id,
+                                               'formation_name' => $attestation->formation->name,
+                                               'attestation' => $attestation->attestation,
+                                               'created_at' => $attestation->created_at,
+                                           ];
+                                       });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $attestations
+        ]);
+    }
+
+
+
+        // 12. Télécharger une attestation
+
+
+    public function downloadAttestation($id)
+    {
+        $formationStudent = FormationStudent::findOrFail($id);
+
+        $filePath = storage_path('app/public/'. $formationStudent->attestation);
+
+        if (!file_exists($filePath)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Fichier PDF introuvable'
+            ], 404);
+        }
+
+        return Storage::disk('public')->download($formationStudent->attestation, 'attestation_' . $id . '.pdf');
+    }
+
+
+        // 13. Récuppérer une demande de stage d'une formation
+    public function getStudentInternshipRequests($formation_id, Request $request)
+    {
+        $student_id = $request->user()->id;
+
+        $requests = FormationStudent::where('formation_id', $formation_id)
+                                    ->where('student_id', $student_id)
+                                   ->with(['formation'])
+                                   ->get()
+                                   ->map(function ($request) {
+                                       return [
+                                           'id' => $request->id,
+                                           'formation_name' => $request->formation->name,
+                                           'request_status' => $request->request_status,
+                                           'request_internership' => $request->request_internership,
+                                           'created_at' => $request->created_at,
+                                       ];
+                                   });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $requests
+        ]);
+    }
 
 
 

@@ -183,13 +183,29 @@
             Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
             Route::post('/formation_student/{formation_id}/internship-request', [FormationStudentController::class, 'storeInternshipRequest']);
 
+
+
+            // Routes pour les étudiants
+            Route::get('/student/internship-requests', [FormationStudentController::class, 'listStudentInternshipRequests']);
+            Route::get('/student/attestations', [FormationStudentController::class, 'listStudentAttestations']);
+            //Route::get('/student/attestations/{id}/download', [FormationStudentController::class, 'downloadAttestation']);
+            Route::get('/formation_student/{formationId}/internship-requests', [FormationStudentController::class, 'getStudentInternshipRequests']);
+
+
+            // Routes admin
+            Route::middleware('admin')->group(function () {
+                Route::get('/internship-requests', [FormationStudentController::class, 'listInternshipRequests']);
+                Route::get('/internship-requests/{id}/download', [FormationStudentController::class, 'downloadInternshipRequest']);
+                Route::patch('/internship-requests/{id}', [FormationStudentController::class, 'updateInternshipRequest']);
+            });
                                                                 
      
         });
-        
+        Route::get('/student/attestations/{id}/download', [FormationStudentController::class, 'downloadAttestation']);
 
 
 
+    
        
 
 
@@ -210,6 +226,31 @@
     Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
     Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
     Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
+
+
+
+
+
+
+
+
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    })->middleware('auth:sanctum');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                 ?>

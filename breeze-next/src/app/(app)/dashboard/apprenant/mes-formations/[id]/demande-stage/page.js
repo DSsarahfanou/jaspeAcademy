@@ -7,8 +7,11 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Link from 'next/link';
 import axios from '/src/lib/axios';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export default function DemandeStage({ params }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const formationId = params.id;
   const [userData, setUserData] = useState(null);
@@ -19,6 +22,9 @@ export default function DemandeStage({ params }) {
     canProvideAccommodation: false,
     durationMonths: 1,
   });
+  const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
 
   // Récupérer les informations de l'utilisateur
   useEffect(() => {
@@ -35,7 +41,7 @@ export default function DemandeStage({ params }) {
 
         console.log(response);
         const data = response.data;
-        setUserData(data); // ✔️ c'est ici qu'on met les vraies données
+        setUserData(data); // c'est ici qu'on met les  données
 
         setFormData(prev => ({
           ...prev,
@@ -47,12 +53,31 @@ export default function DemandeStage({ params }) {
           birth_date: data.birth_date,
           gender: data.gender,
         }));
+
+
+
+        // ➜ Vérifier la demande existante
+        const check = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formation_student/${formationId}/internship-requests`,
+          { withCredentials: true }
+        );
+
+        if (check.data.data.length > 0 && check.data.data[0].request_internership) {
+          setHasAlreadySubmitted(true);
+        }
+
+
       } catch (error) {
         toast.error(error.message);
       } finally {
         setLoading(false);
       }
     };
+
+    
+
+
+
 
     if (!formationId) {
       toast.error('ID de formation manquant');
@@ -76,6 +101,8 @@ export default function DemandeStage({ params }) {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formation_student/${formationId}/internship-request`, formData,);
       console.log(formData);
       toast.success('Demande de stage soumise avec succès !');
+      setIsSubmitted(true);
+      
     } catch (error) {
       toast.error(error.message);
     }
@@ -96,6 +123,33 @@ export default function DemandeStage({ params }) {
       </div>
     );
   }
+
+
+ if (hasAlreadySubmitted || isSubmitted) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white shadow-lg rounded p-8 text-center"
+        >
+          <h2 className="text-2xl font-bold mb-4">
+            {hasAlreadySubmitted
+              ? "Vous avez déjà soumis une demande de stage."
+              : "Votre demande a été soumise avec succès !"}
+          </h2>
+          <button
+            onClick={() => router.push('/dashboard/apprenant/demande-stage')}
+            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Suivre ma demande
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
