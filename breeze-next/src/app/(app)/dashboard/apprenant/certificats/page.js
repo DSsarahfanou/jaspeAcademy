@@ -72,7 +72,7 @@ export default function StudentAttestations() {
                     <FaDownload className="mr-2" /> Télécharger
                   </button>
                 </div>
-              </a>
+              </a>          
             ))}
           </div>
         )}

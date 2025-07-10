@@ -108,6 +108,7 @@
         use App\Http\Controllers\FormationController;
         use App\Http\Controllers\UserController;
         use App\Http\Controllers\QuizController;
+        use App\Http\Controllers\LiveKitController;
         
 
 
@@ -240,6 +241,7 @@
 
 
 
+    Route::middleware('auth:sanctum')->post('/livekit/token', [LiveKitController::class, 'generateToken']);
 
 
 
