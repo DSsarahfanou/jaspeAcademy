@@ -5,62 +5,66 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
 use App\Models\Meeting;
+use App\Models\FormationStudent;
+use Illuminate\Http\Request;
+
+// MeetingController.php
 
 class MeetingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lister les réunions pour une formation
+    public function index($formationId)
     {
-        //
+        $teacher = auth()->user();
+
+        $meetings = Meeting::where('formation_id', $formationId)
+            ->where('teacher_id', $teacher->id)
+            ->with('students')
+            ->get();
+
+        return response()->json($meetings);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Créer une réunion pour un niveau
+    public function store(Request $request, $formationId)
     {
-        //
+        $teacher = auth()->user();
+        $validated = $request->validate([
+            'progression_level' => 'required|in:25,50,75',
+            'scheduled_at' => 'required|date',
+        ]);
+
+        $meeting = Meeting::create([
+            'formation_id' => $formationId,
+            'teacher_id' => $teacher->id,
+            'progression_level' => $validated['progression_level'],
+            'scheduled_at' => $validated['scheduled_at'],
+        ]);
+
+        // Lier dynamiquement les étudiants qui ont le bon niveau
+        $students = FormationStudent::where('formation_id', $formationId)
+            ->where('progression', '>=', $validated['progression_level'])
+            ->get();
+
+        foreach ($students as $fs) {
+            $meeting->students()->attach($fs->student_id);
+        }
+
+        return response()->json($meeting);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreMeetingRequest $request)
+    // Marquer un participant comme ayant assisté
+    public function markAttendance(Request $request, $meetingId)
     {
-        //
-    }
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Meeting $meeting)
-    {
-        //
-    }
+        $meeting = Meeting::findOrFail($meetingId);
+        $meeting->students()->updateExistingPivot($request->student_id, [
+            'has_attended' => true,
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Meeting $meeting)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateMeetingRequest $request, Meeting $meeting)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Meeting $meeting)
-    {
-        //
+        return response()->json(['message' => 'Attendance marked.']);
     }
 }

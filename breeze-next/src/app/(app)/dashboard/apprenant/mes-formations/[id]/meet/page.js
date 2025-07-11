@@ -4,13 +4,14 @@
 import { useState } from "react";
 import JoinRoom from "/src/components/JoinRoom";
 
+
 export default function FormationMeetPage() {
   const [join, setJoin] = useState(false);
 
   const roomName = "formation_123"; // par exemple, dynamique selon ton contexte
 
   return (
-    <div>
+    <div style={{ flex: 1, display: "flex", flexWrap: "wrap", gap: "10px" }}>
       {!join ? (
         <button
           onClick={() => setJoin(true)}

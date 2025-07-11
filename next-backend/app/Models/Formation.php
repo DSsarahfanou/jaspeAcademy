@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Http\Controllers\FormationStudent;
+
 
 class Formation extends Model
 {
@@ -13,7 +17,7 @@ class Formation extends Model
     // L'ajout des attributs dans le $fillable permet de spécifier les champs de la migration
     // dasn lesquels on peut faire le CRUD 
     // liée au Model actuel .
-    use HasFactory;
+    use HasFactory, HasRoles;
 
     protected $fillable = [
         'user_id',
@@ -27,42 +31,19 @@ class Formation extends Model
     // Fin
 
 
-    public function students()
-    {
-        return
-            $this->belongsToMany(Student::class);
-    }
-
-
-
-    public function teachers()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-
-
-    /**
-     * L'enseignant (teacher) qui anime la formation.
-     */
-    // public function teacher(): BelongsTo
+    // public function students()
     // {
-    //     return $this->belongsTo(User::class, 'user_id'); // 'user_id' est la clé étrangère dans la table `formations`
-    //         ->whereHas('roles', fn($query) => $query->where('name', 'teacher'));
-    //         // Optionnel : s'assurer que le user a bien le rôle "teacher"
+    //     return
+    //         $this->belongsToMany(students::class);
     // }
 
-    /**
-     * Les étudiants (students) qui suivent la formation.
-     */
-    // public function students(): BelongsToMany
+
+
+    // public function teachers()
     // {
-    //     return $this->belongsToMany(User::class, 'formation_student', 'formation_id', 'user_id')
-    //         ->whereHas('roles', fn($query) => $query->where('name', 'student'))
-    //         ->withPivot('progress', 'enrolled_at'); // Exemple de champs supplémentaires
+    //     return $this->belongsTo(User::class, 'user_id');
     // }
 
-    //Fin
 
 
     // Début :
@@ -96,6 +77,33 @@ class Formation extends Model
         return $this->hasMany(Quiz::class);
     }
     //Fin
+
+
+
+
+
+    /**
+     * L'enseignant (teacher) qui anime la formation.
+     */
+    public function teacher(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Les étudiants (students) qui suivent la formation.
+     */
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'formation_students', 'formation_id', 'student_id')
+            ->where('role', 'student');
+    }
+
+
+    //Fin
+
+
+
 }
 
 

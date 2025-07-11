@@ -5,25 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// Meeting.php
+
 class Meeting extends Model
 {
-    /** @use HasFactory<\Database\Factories\MeetingFactory> */
-    use HasFactory;
-
-        protected $fillable = [
+    protected $fillable = [
         'formation_id',
-        'link',
-        'status',
-        'date',
+        'teacher_id',
+        'progression_level',
+        'scheduled_at',
+        'room_link',
     ];
 
-
-    // Début :
-    // Ajout de la relation entre  FormationStudent et Meetings: 
-    // Signification :  Une FormationStudent contient zero ou plusieurs Meetings. 
-    public function formationStudent()
-    {
-        return $this->hasMany(Meeting::class);
+    public function formation() {
+        return $this->belongsTo(Formation::class);
     }
-    //Fin
+
+    public function teacher() {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function students() {
+        return $this->belongsToMany(User::class, 'meeting_student', 'meeting_id', 'student_id')
+                    ->withPivot('has_attended')
+                    ->withTimestamps();
+    }
 }
+

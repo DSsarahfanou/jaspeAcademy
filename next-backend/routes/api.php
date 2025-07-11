@@ -109,7 +109,7 @@
         use App\Http\Controllers\UserController;
         use App\Http\Controllers\QuizController;
         use App\Http\Controllers\LiveKitController;
-        
+        use App\Http\Controllers\MeetingController;
 
 
 
@@ -193,6 +193,11 @@
             Route::get('/formation_student/{formationId}/internship-requests', [FormationStudentController::class, 'getStudentInternshipRequests']);
 
 
+            //Routes pour les formateurs 
+
+            Route::get('/formations/teacher/{teacherId}', [FormationStudentController::class, 'getFormationsWithStudents']);
+            Route::get('/formations/teacher/{teacherId}/progression/{minProgression?}', [FormationController::class, 'getFormationsWithFilteredStudentsAndRelations']);
+
             // Routes admin
             Route::middleware('admin')->group(function () {
                 Route::get('/internship-requests', [FormationStudentController::class, 'listInternshipRequests']);
@@ -249,10 +254,17 @@
 
 
 
+    //Route pour meetings
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/formations/{formation}/meetings', [MeetingController::class, 'index']);
+        Route::post('/formations/{formation}/meetings', [MeetingController::class, 'store']);
+        Route::post('/meetings/{meeting}/attendance', [MeetingController::class, 'markAttendance']);
+    });
 
 
+    //Route pour teacher et formations 
 
-
-
+    Route::get('/teacher/formations', [FormationController::class, 'indexForTeacher']);
+    Route::get('/teacher/formations/{id}', [FormationController::class, 'showToTeacher']);
 
                 ?>

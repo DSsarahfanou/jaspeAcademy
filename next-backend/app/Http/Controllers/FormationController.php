@@ -7,6 +7,8 @@ use App\Models\EquipmentFormation;
 use App\Models\Formation;
 use App\Models\Lesson;
 use App\Models\Module;
+use App\Models\FormationStudent;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -258,5 +260,39 @@ class FormationController extends Controller
             'status' => 'success',
             'data' => $equipments
         ]);
+    }
+
+
+
+
+
+ 
+
+
+
+    // Récuppérer les formations
+    public function indexForTeacher(Request $request) {
+        $teacher = $request->user();
+        return Formation::where('user_id', $teacher->id)
+                        ->withCount('students') 
+                        ->get();
+    }
+
+   //Trier avec les relations
+    public function showToTeacher($id) {
+        $formation = Formation::with(['modules.lessons', 'equipments', 'students'])
+                            ->findOrFail($id);
+
+        // Récupérer progression & score depuis FormationStudent
+        $formation->students->each(function ($student) use ($id) {
+            $fs = FormationStudent::where('formation_id', $id)
+                                ->where('student_id', $student->id)
+                                ->first();
+            $student->progression = $fs->progression;
+            $student->completed_lessons = $fs->completed_lessons;
+            $student->score = $fs->score;
+        });
+
+        return $formation;
     }
 }

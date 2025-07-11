@@ -6,6 +6,7 @@ import { LiveKitRoom, VideoConference, ParticipantLoop, VideoTrack, AudioTrack }
 import axios from "/src/lib/axios";
 import { useParticipants } from "@livekit/components-react";
 
+
 function DebugParticipants() {
   const participants = useParticipants();
   console.log("Participants:", participants);
