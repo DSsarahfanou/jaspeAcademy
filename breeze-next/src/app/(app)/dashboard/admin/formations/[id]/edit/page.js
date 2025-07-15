@@ -239,6 +239,7 @@ export default function EditFormationPage({ params }) {
   if (loading && !formation) {
     return (
       <div className="p-6">
+        <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
         <p>Chargement en cours...</p>
       </div>
     )

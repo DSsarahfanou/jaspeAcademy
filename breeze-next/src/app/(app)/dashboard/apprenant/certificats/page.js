@@ -39,7 +39,8 @@ export default function StudentAttestations() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+        <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+        <p>Chargement...</p> 
       </div>
     );
   }

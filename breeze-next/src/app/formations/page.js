@@ -203,7 +203,7 @@ export default function FormationsManagementPage() {
                         >
                           {equipment.picture && (
                             <img
-                              src={`http://localhost:8000/storage/${equipment.image}`}
+                              src={`http://localhost:8000/storage/${equipment.picture}`}
                               alt={equipment.name}
                               className="object-cover w-12 h-12 rounded"
                             />
@@ -238,7 +238,7 @@ export default function FormationsManagementPage() {
                     href="/shop"
                     className="px-6 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
                   >
-                    <FaPlus className="mr-2" /> S'inscrire maintenant
+                    <FaPlus className="mr-2" />Acheter equipments
                   </Link>
                 </motion.div>
               </div>

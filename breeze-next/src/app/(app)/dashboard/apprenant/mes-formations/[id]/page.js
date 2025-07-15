@@ -407,6 +407,15 @@ export default function FormationDetail() {
   const [modulesTerminés, setModulesTerminés] = useState([]);
   const [progression, setProgression] = useState(0);
   const [completedLessons, setCompletedLessons] = useState([]);
+  /**
+   * Vérifie si TOUTES les leçons d’un module sont terminées
+   */
+  const isModuleCompleted = (module) => {
+    return module.lessons.every((lesson) =>
+      completedLessons.includes(getLessonKey(module.id, lesson.id))
+    );
+  };
+
 
   const router = useRouter();
   const params = useParams();
@@ -513,7 +522,8 @@ export default function FormationDetail() {
   if (loading) {
   return (
     <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+       <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+      <p>Chargement...</p> 
     </div>
   );
 }
@@ -657,7 +667,7 @@ const allerLeconPrecedente = () => {
 const allerAuQuiz = () => {
   const currentLessonKey = getLessonKey(moduleActuel.id, leconActuelle.id);
 
-  // ✅ Vérifier si la dernière leçon a été complétée
+  //  Vérifier si la dernière leçon a été complétée
   if (!completedLessons.includes(currentLessonKey)) {
     const newCompletedLessons = [...completedLessons, currentLessonKey];
     const totalLecons = calculerTotalLecons(formation.modules);
@@ -673,7 +683,7 @@ const allerAuQuiz = () => {
     }
   }
 
-  // ✅ On peut accéder au quiz
+  //  On peut accéder au quiz
   toast.success("Tous les modules sont terminés ! 🚀");
   router.push(`/dashboard/apprenant/mes-formations/${formation.id}/quiz`);
 };
@@ -683,9 +693,8 @@ return (
   <div className="flex">
     <ToastContainer position="top-right" />
     
-    
-    <aside className="w-64 max-h-[calc(100vh-100px)] sticky top-0 overflow-y-auto space-y-4 p-4 bg-white rounded shadow">
-      <h2 className="mb-2 text-xl font-semibold text-blue-700">Modules</h2>
+    <aside className="sticky top-0  w-64 max-h-[calc(100vh-100px)] space-y-4 p-4 bg-white">
+      <h2 className="mb-2 text-xl font-semibold text-blue-700 text-center">Modules</h2>
       {formation.modules.map((mod, index) => (
         <motion.div
           key={mod.id}
@@ -694,7 +703,11 @@ return (
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
           className={`border p-4 rounded-lg shadow-sm cursor-pointer ${
-            moduleIndex === index ? "bg-blue-100 border-blue-600" : "bg-white"
+            moduleIndex === index
+              ? "bg-blue-100 border-blue-600"
+              : isModuleCompleted(mod)
+              ? "bg-green-50 border-green-500"
+              : "bg-white"
           }`}
           onClick={() => {
             if (peutAccederLecon(index, 0)) {
@@ -706,8 +719,8 @@ return (
           }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">{mod.title}</span>
-            {modulesTerminés.includes(index) && (
+            <span>{mod.title}</span>
+            {isModuleCompleted(mod) && (
               <FaCheckCircle className="text-green-600" />
             )}
           </div>

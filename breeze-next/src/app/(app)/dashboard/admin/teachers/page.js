@@ -176,7 +176,10 @@ export default function TeacherList() {
   }
 
   if (error) return <div className="p-6 text-red-500">Erreur de chargement des données</div>
-  if (isLoading) return <div className="p-6">Chargement en cours...</div>
+  if (isLoading) return <div className="p-6">      
+      <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+      <p>Chargement...</p> 
+    </div>
   if (!allTeachers.length) return <div className="p-6">Aucun enseignant trouvé</div>
 
   const filteredTeachers = allTeachers.filter(teacher => {

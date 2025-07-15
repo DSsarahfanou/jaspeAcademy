@@ -68,7 +68,7 @@ export default function EditReunion() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4 text-purple-700">Modifier la Réunion</h2>
+      <h2 className="text-2xl font-bold mb-4 text-blue-700">Modifier la Réunion</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -155,7 +155,7 @@ export default function EditReunion() {
 
           <button
             type="submit"
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             💾 Enregistrer
           </button>

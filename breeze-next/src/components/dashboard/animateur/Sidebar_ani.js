@@ -48,12 +48,12 @@ export default function SidebarAnimateur() {
 
   return (
     <div
-      className={`h-screen bg-purple-900 text-white ${
+      className={`h-screen bg-blue-900 text-white ${
         open ? "w-64" : "w-16"
       } transition-all duration-300 flex flex-col`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-purple-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         {open && 
           <span className="text-lg font-bold">
             <Link
@@ -79,7 +79,7 @@ export default function SidebarAnimateur() {
           <Link
             key={href}
             href={href}
-            className="flex items-center p-4 transition-all duration-200 hover:bg-purple-800"
+            className="flex items-center p-4 transition-all duration-200 hover:bg-blue-800"
           >
             <Icon className="text-xl" />
             {open && <span className="ml-3">{label}</span>}
@@ -88,14 +88,14 @@ export default function SidebarAnimateur() {
       </nav>
 
       {/* Footer */}
-      <div className="flex items-center text-red-300 hover:text-white transition p-4 border-t border-purple-800" onClick={logout}>
+      <div className="flex items-center text-red-300 hover:text-white transition p-4 border-t border-blue-800" onClick={logout}>
 
           <FaSignOutAlt className="text-xl" />
           {open && <span className="ml-3">Déconnexion</span>}
       </div>
 
       {open && (
-        <div className="p-4 text-sm text-center text-purple-200">
+        <div className="p-4 text-sm text-center text-blue-200">
           Merci de guider les talents de demain 
         </div>
       )}

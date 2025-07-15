@@ -36,7 +36,7 @@ export default function TeacherFormations() {
             {formation.picture && (
               <div className="relative h-40 w-full">
                 <Image
-                  src={formation.image_url}
+                  src={`http://localhost:8000/storage/${formation.picture}`}
                   alt={formation.name}
                   layout="fill"
                   objectFit="cover"

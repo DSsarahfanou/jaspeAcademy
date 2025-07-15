@@ -10,6 +10,8 @@ import {
   FaEnvelopeOpenText,
   FaSignOutAlt,
   FaBars,
+  FaViadeoSquare,
+  FaVideo,
 } from "react-icons/fa";
 import { useAuth } from "/src/hooks/auth";
 
@@ -20,6 +22,7 @@ const links = [
   { href: "/dashboard/apprenant/mes-formations", label: "Mes formations", icon: FaGraduationCap },
   { href: "/dashboard/apprenant/certificats", label: "Mes certificats", icon: FaFileAlt },
   { href: "/dashboard/apprenant/demande-stage", label: "Demande de stage", icon: FaEnvelopeOpenText },
+   { href: "/dashboard/apprenant/meet", label: "Réunions", icon: FaVideo },
 ];
 
 export default function SidebarApprenant() {

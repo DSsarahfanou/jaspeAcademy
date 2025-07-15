@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Http\Controllers\FormationStudent;
 
 
 class Formation extends Model
@@ -39,10 +38,6 @@ class Formation extends Model
 
 
 
-    // public function teachers()
-    // {
-    //     return $this->belongsTo(User::class, 'user_id');
-    // }
 
 
 
@@ -89,6 +84,12 @@ class Formation extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+        public function teachers()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 
     /**
      * Les étudiants (students) qui suivent la formation.

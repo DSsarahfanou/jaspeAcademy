@@ -53,7 +53,7 @@ const navItems = [
   {
     label: 'Gestion des demandes de stage',
     icon: <FaFileAlt size={20} />,
-    href: '/dashboard/admin/stages/consult',
+    href: '/dashboard/admin/internship-requests',
   },
   {
     label: 'Gestion des commandes',

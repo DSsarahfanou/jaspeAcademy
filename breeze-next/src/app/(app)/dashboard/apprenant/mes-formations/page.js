@@ -28,7 +28,10 @@ export default function MesFormationsPage() {
   }, [user]);
 
   if (loading || !user) {
-    return <div className="p-6 text-center">Chargement des formations...</div>;
+    return <div className="p-6 text-center">
+      <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+      <p>Chargement...</p> 
+    </div>;
   }
 
   return (

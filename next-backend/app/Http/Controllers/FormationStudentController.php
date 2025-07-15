@@ -469,6 +469,63 @@ class FormationStudentController extends Controller
 
 
 
+    
+    // 14. Récupérer le score pour une formation et un étudiant
+    public function showScore($formation_id, Request $request)
+    {
+       // $student_id = $request->user()->id; // Supposons que l'utilisateur est authentifié
+
+         $student_id = Auth::id();
+
+        $formationStudent = FormationStudent::where('formation_id', $formation_id)
+                                           ->where('student_id', $student_id)
+                                           ->first();
+
+        if (!$formationStudent) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucune association trouvée pour cette formation et cet étudiant'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'score' => $formationStudent->score,
+                'completed_lessons' => $formationStudent->completed_lessons ?? [],
+            ]
+        ]);
+    }
+
+
+    // 15. Récupérer l'attestation pour une formation et un étudiant
+    public function showAttestation($formation_id, Request $request)
+    {
+       // $student_id = $request->user()->id; // Supposons que l'utilisateur est authentifié
+
+         $student_id = Auth::id();
+
+        $formationStudent = FormationStudent::where('formation_id', $formation_id)
+                                           ->where('student_id', $student_id)
+                                           ->first();
+
+        if (!$formationStudent) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Aucune association trouvée pour cette formation et cet étudiant'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'attestation' => $formationStudent->attestation,
+            ]
+        ]);
+    }
+
+
+
 
 
 

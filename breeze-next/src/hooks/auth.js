@@ -207,14 +207,14 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             })
     );
 
-    const getRedirectPath = (role) => {
-        const paths = {
-            admin: '/dashboard/admin',
-            teacher: '/dashboard/animateur',
-            student: '/dashboard/apprenant',
-        };
-        return paths[role] || '/dashboard/apprenant';
-    };
+    // const getRedirectPath = (role) => {
+    //     const paths = {
+    //         admin: '/dashboard/admin',
+    //         teacher: '/dashboard/animateur',
+    //         student: '/dashboard/apprenant',
+    //     };
+    //     return paths[role] || '/dashboard/apprenant';
+    // };
 
     const login = async ({ setErrors, setStatus, ...props }) => {
         try {
@@ -223,8 +223,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             const loginResponse = await axios.post('/login', props); // Pas besoin de withCredentials ici
 
             await mutate(); // recharge les infos de l'utilisateur
-            const role = loginResponse.data.user.role || 'student';
-            router.push(getRedirectPath(role));
+            return loginResponse.data.user;
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);

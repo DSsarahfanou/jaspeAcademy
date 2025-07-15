@@ -52,7 +52,7 @@ export default function Equipements() {
         return [...panierActuel, { 
           ...equipment, 
           quantite: 1,
-          image: equipment.image ? `http://127.0.0.1:8000/storage/${equipment.image}` : '/default-equipment.jpg'
+          picture: equipment.picture ? `http://127.0.0.1:8000/storage/${equipment.picture}` : '/default-equipment.jpg'
         }];
       }
     });
@@ -116,7 +116,8 @@ export default function Equipements() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-32 h-32 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+      <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+      <p>Chargement...</p> 
       </div>
     );
   }
@@ -227,7 +228,7 @@ export default function Equipements() {
                     {panier.map((article) => (
                       <div key={article.id} className="flex items-center py-4">
                         <img 
-                          src={article.image} 
+                          src={article.picture} 
                           alt={article.name} 
                           className="w-16 h-16 mr-4 rounded-lg object-cover border border-gray-200"
                         />
@@ -405,7 +406,7 @@ function EquipementCard({ equipment, ajouterAuPanier }) {
     >
       <div className="relative h-56 overflow-hidden group">
         <img
-          src={equipment.image ? `http://127.0.0.1:8000/storage/${equipment.image}` : '/default-equipment.jpg'}
+          src={`http://127.0.0.1:8000/storage/${equipment.picture}`}
           alt={equipment.name}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {

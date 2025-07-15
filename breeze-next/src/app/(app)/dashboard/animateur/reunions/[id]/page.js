@@ -49,7 +49,7 @@ export default function ReunionDetail() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded shadow">
-      <h2 className="text-3xl font-bold mb-4 text-purple-700">{reunion.sujet}</h2>
+      <h2 className="text-3xl font-bold mb-4 text-blue-700">{reunion.sujet}</h2>
       <p className="text-gray-600 mb-2">📅 {reunion.date} à 🕒 {reunion.heure}</p>
       <p className="text-blue-600 mb-4">
         🔗 <a href={reunion.lien} target="_blank" rel="noopener noreferrer">{reunion.lien}</a>

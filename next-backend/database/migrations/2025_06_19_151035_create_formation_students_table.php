@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('formation_id')->constrained('formations')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->integer('progression')->default(0);
+            $table->json('completed_lessons')->nullable();
             $table->integer('score')->nullable();
             $table->string('attestation')->nullable();
             $table->string('path_paiement')->nullable();

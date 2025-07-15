@@ -62,7 +62,7 @@ export default function InternshipRequests() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
       </div>
     );
   }
@@ -139,7 +139,7 @@ export default function InternshipRequests() {
           </tbody>
         </table>
         <div className="mt-6">
-          <Link href="/admin" className="inline-flex items-center px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+          <Link href="/dashboard/admin" className="inline-flex items-center px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
             Retour
           </Link>
         </div>

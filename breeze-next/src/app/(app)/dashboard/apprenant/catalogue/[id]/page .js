@@ -45,7 +45,11 @@ export default function FormationInscriptionPage({params}) {
     fetchFormation()
   }, [id])
 
-  if (loading) return <div className="p-6">Chargement...</div>
+  if (loading) return 
+    <div className="p-6">
+      <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+      <p>Chargement...</p> 
+    </div>
   if (error) return <div className="p-6">Erreur: {error}</div>
   if (!formation) {
     return (

@@ -87,7 +87,10 @@ export default function DemandeStagePage() {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">📩 Demande de stage</h1>
 
       {loading ? (
-        <p>Chargement...</p>
+        <div>
+          <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+          <p>Chargement...</p> 
+        </div>
       ) : status ? (
         <div className="bg-white p-5 rounded-xl shadow-md border">{renderStatut()}</div>
       ) : (

@@ -20,7 +20,9 @@ export default function PdfPreview({ url }) {
       <Document
         file={url}
         onLoadSuccess={onDocumentLoadSuccess}
-        loading={<span className="text-gray-400 text-sm">Chargement...</span>}
+        loading={<span className="text-gray-400 text-sm">      
+          <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+          <p>Chargement...</p> </span>}
         error={<span className="text-red-400 text-sm">Erreur de chargement</span>}
       >
         <Page 

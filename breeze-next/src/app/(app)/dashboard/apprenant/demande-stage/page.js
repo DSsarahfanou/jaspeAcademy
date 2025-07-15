@@ -63,7 +63,8 @@ export default function StudentInternshipRequests() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+        <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+        <p>Chargement...</p> 
       </div>
     );
   }
@@ -85,7 +86,6 @@ export default function StudentInternshipRequests() {
                 <th className="p-2 text-left">Formation</th>
                 <th className="p-2 text-left">Statut</th>
                 <th className="p-2 text-left">Date</th>
-                <th className="p-2 text-left">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -102,14 +102,6 @@ export default function StudentInternshipRequests() {
                     </span>
                   </td>
                   <td className="p-2">{new Date(request.created_at).toLocaleDateString()}</td>
-                  <td className="p-2">
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/internship-requests/${request.id}/download`}
-                      className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      <FaEye />
-                    </a>
-                  </td>
                 </tr>
               ))}
             </tbody>

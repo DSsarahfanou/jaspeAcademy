@@ -30,5 +30,7 @@ class Meeting extends Model
                     ->withPivot('has_attended')
                     ->withTimestamps();
     }
+
+    
 }
 

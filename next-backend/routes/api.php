@@ -116,7 +116,7 @@
         require __DIR__ . '/auth.php';
 
 
-        Route::middleware('auth:sanctum')->post('/profile/update', [ProfileController::class, 'update']);
+        Route::middleware('auth:sanctum')->post('/profile/update', [UserController::class, 'update']);
         Route::middleware('auth:sanctum')->post('/profile/password', [ProfileController::class, 'updatePassword']);
 
 
@@ -181,6 +181,8 @@
             Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
             Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
             Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
+            Route::get('/formation_student/{formation_id}/score', [FormationStudentController::class, 'showScore']);
+            Route::get('/formation_student/{formation_id}/attestation', [FormationStudentController::class, 'showAttestation']);
             Route::patch('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'updateProgression']);
             Route::post('/formation_student/{formation_id}/internship-request', [FormationStudentController::class, 'storeInternshipRequest']);
 
@@ -194,9 +196,6 @@
 
 
             //Routes pour les formateurs 
-
-            Route::get('/formations/teacher/{teacherId}', [FormationStudentController::class, 'getFormationsWithStudents']);
-            Route::get('/formations/teacher/{teacherId}/progression/{minProgression?}', [FormationController::class, 'getFormationsWithFilteredStudentsAndRelations']);
 
             // Routes admin
             Route::middleware('admin')->group(function () {
@@ -258,7 +257,11 @@
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/formations/{formation}/meetings', [MeetingController::class, 'index']);
         Route::post('/formations/{formation}/meetings', [MeetingController::class, 'store']);
-        Route::post('/meetings/{meeting}/attendance', [MeetingController::class, 'markAttendance']);
+        Route::post('/meetings/{meeting}/attendance', [MeetingController::class, 'joinMeeting']);
+        Route::middleware('auth:sanctum')->get('/teacher/meetings', [MeetingController::class, 'teacherMeetings']);
+        Route::middleware(['auth:sanctum'])->get('/student/meetings', [MeetingController::class, 'studentMeetings']);
+        
+
     });
 
 
