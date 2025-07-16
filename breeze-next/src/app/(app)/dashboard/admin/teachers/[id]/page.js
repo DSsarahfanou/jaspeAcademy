@@ -9,7 +9,7 @@ import { Toaster } from 'react-hot-toast'
 
 export default function TeacherDetails() {
   const { id } = useParams()
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL|| 'http://127.0.0.1:8000'
 
   const { data, error, isLoading, mutate } = useSWR(
     `/api/teachers/${id}`, 
