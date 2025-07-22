@@ -51,7 +51,6 @@ return array(
     'App\\Models\\Option' => $baseDir . '/app/Models/Option.php',
     'App\\Models\\Order' => $baseDir . '/app/Models/Order.php',
     'App\\Models\\Question' => $baseDir . '/app/Models/Question.php',
-    'App\\Models\\Quiz' => $baseDir . '/app/Models/Quiz.php',
     'App\\Models\\Student' => $baseDir . '/app/Models/Student.php',
     'App\\Models\\Teacher' => $baseDir . '/app/Models/Teacher.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',

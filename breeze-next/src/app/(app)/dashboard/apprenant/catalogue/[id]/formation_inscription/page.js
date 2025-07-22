@@ -6,6 +6,9 @@ import axios from '/src/lib/axios'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { openKkiapayWidget, addKkiapayListener, removeKkiapayListener } from 'kkiapay';
+import { useAuth } from "/src/hooks/auth";
+import Image from 'next/image'
+
 
 export default function FormationInscriptionPage({ params }) {
   const { id } = params
@@ -16,6 +19,8 @@ export default function FormationInscriptionPage({ params }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [paymentSuccess, setPaymentSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth();
+  const [showLogo, setShowLogo] = useState(false);
 
   useEffect(() => {
     const fetchFormation = async () => {
@@ -57,12 +62,14 @@ export default function FormationInscriptionPage({ params }) {
   const handlePaymentSuccess = async (response) => {
     try {
       // Enregistrer l'inscription et générer la facture
-      const inscriptionResponse = await axios.post('/api/formation/inscription', {
-        formationId: formation.id,
+      const inscriptionResponse = await axios.post('/api/formation_student', {
+        formation_id: formation.id,
+        student_id: user.id, // ou ton ID user actuel
         paymentData: response,
-        amount: formation.price
+        amount: formation.price,
       });
 
+      console.log(inscriptionResponse)
       if (inscriptionResponse.data.success) {
         setPaymentSuccess(true);
         nextStep();
@@ -76,6 +83,9 @@ export default function FormationInscriptionPage({ params }) {
 
   function openPayment(price) {
     setIsLoading(true);
+    setShowLogo(true);
+
+
     
     openKkiapayWidget({
       amount: price,
@@ -88,6 +98,7 @@ export default function FormationInscriptionPage({ params }) {
     const successListener = (response) => {
       console.log('Payment successful!', response);
       handlePaymentSuccess(response);
+      setShowLogo(false);
       removeKkiapayListener('success', successListener);
       setIsLoading(false);
     };
@@ -95,6 +106,7 @@ export default function FormationInscriptionPage({ params }) {
     const errorListener = (error) => {
       console.error('Payment error:', error);
       setPaymentSuccess(false);
+      setShowLogo(false);
       nextStep();
       removeKkiapayListener('error', errorListener);
       setIsLoading(false);
@@ -102,6 +114,7 @@ export default function FormationInscriptionPage({ params }) {
 
     const cancelListener = () => {
       console.log('Payment cancelled');
+      setShowLogo(false);
       removeKkiapayListener('cancel', cancelListener);
       setIsLoading(false);
     };
@@ -109,6 +122,13 @@ export default function FormationInscriptionPage({ params }) {
     addKkiapayListener('success', successListener);
     addKkiapayListener('error', errorListener);
     addKkiapayListener('cancel', cancelListener);
+
+
+
+    setTimeout(() => {
+    setShowLogo(false);
+    setIsLoading(false);
+  }, 60000);
   }
 
   const stepVariants = {
@@ -204,25 +224,33 @@ export default function FormationInscriptionPage({ params }) {
                   </div>
                 </div>
 
-                <div className="mb-8">
-                  <h3 className="mb-4 text-lg font-semibold">Méthode de paiement</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="mb-12">
+                  <h3 className="mb-6 text-xl font-semibold text-gray-800">Méthode de paiement</h3>
+
+                  <div className="flex items-center justify-center">
                     <button
                       onClick={() => openPayment(formation.price)}
                       disabled={isLoading}
-                      className={`flex flex-col items-center justify-center p-4 border rounded-lg hover:border-indigo-500 transition ${
+                      className={`flex flex-col items-center justify-center w-full max-w-xs px-6 py-5 bg-white border border-gray-200 rounded-xl shadow hover:border-indigo-500 hover:shadow-md transition ${
                         isLoading ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
-                      <img
-                        src="https://kkiapay.me/assets/img/kkiapay.png"
-                        alt="KkiaPay"
-                        className="h-10 mb-2"
-                      />
-                      {isLoading ? 'Traitement...' : 'Payer avec KkiaPay'}
+                      <div className="flex items-center justify-center mb-4">
+                        <Image
+                          src="/image/kkiapay.jpg"
+                          alt="Kkiapay Logo"
+                          width={120}
+                          height={60}
+                          className="object-contain"
+                        />
+                      </div>
+                      <span className="text-indigo-600 font-medium">
+                        {isLoading ? 'Traitement en cours...' : 'Payer avec Kkiapay'}
+                      </span>
                     </button>
                   </div>
                 </div>
+
 
                 <div className="flex justify-between">
                   <button
@@ -272,6 +300,14 @@ export default function FormationInscriptionPage({ params }) {
                       >
                         Commencer maintenant
                       </Link>
+                      <a
+                        href={`http://localhost:8000/api/student/invoice/${formation.id}/download`}
+                        download
+                        className="text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                      >
+                        Télécharger la facture
+                      </a>
+
                     </div>
                   </>
                 ) : (
@@ -292,6 +328,19 @@ export default function FormationInscriptionPage({ params }) {
             )}
           </AnimatePresence>
         </div>
+
+        {showLogo && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+            <Image
+              src="/image/etudiante_jaune.jpg"
+              alt="Jaspe Academy"
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+
       </div>
     </div>
   )

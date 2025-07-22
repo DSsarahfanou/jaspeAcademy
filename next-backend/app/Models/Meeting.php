@@ -27,7 +27,7 @@ class Meeting extends Model
 
     public function students() {
         return $this->belongsToMany(User::class, 'meeting_student', 'meeting_id', 'student_id')
-                    ->withPivot('has_attended')
+                    ->withPivot('level')
                     ->withTimestamps();
     }
 

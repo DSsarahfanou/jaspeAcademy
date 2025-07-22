@@ -65,37 +65,102 @@ export default function FormationInscriptionPage({params}) {
   const nextStep = () => setCurrentStep(prev => prev + 1)
   const prevStep = () => setCurrentStep(prev => prev - 1)
 
-  const handlePayment = () => {
-    if (!session?.user?.id) {
-      setError('Veuillez vous connecter pour effectuer le paiement')
-      return
-    }
+  // const handlePayment = () => {
+  //   if (!session?.user?.id) {
+  //     setError('Veuillez vous connecter pour effectuer le paiement')
+  //     return
+  //   }
 
-    setIsLoading(true)
+  //   setIsLoading(true)
     
-    window.kkiapay?.show({
-      amount: formation.price,
-      key: process.env.NEXT_PUBLIC_KKIAPAY_API_KEY,
-      callback: (response) => {
-        if (response.status === "SUCCESS") {
-          setPaymentSuccess(true)
-          nextStep()
-          // You might want to call your API here to register the payment
-        } else {
-          setError('Le paiement a échoué. Veuillez réessayer.')
-        }
-        setIsLoading(false)
-      },
-      data: {
-        formationId: formation.id,
-        userId: session.user.id
-      },
-      theme: {
-        primary: "#4f46e5",
-        secondary: "#ffffff"
-      }
-    })
+  //   window.kkiapay?.show({
+  //     amount: formation.price,
+  //     key: process.env.NEXT_PUBLIC_KKIAPAY_API_KEY,
+  //     callback: (response) => {
+  //       if (response.status === "SUCCESS") {
+  //         setPaymentSuccess(true)
+  //         nextStep()
+  //         // You might want to call your API here to register the payment
+  //       } else {
+  //         setError('Le paiement a échoué. Veuillez réessayer.')
+  //       }
+  //       setIsLoading(false)
+  //     },
+  //     data: {
+  //       formationId: formation.id,
+  //       userId: session.user.id
+  //     },
+  //     theme: {
+  //       primary: "#4f46e5",
+  //       secondary: "#ffffff"
+  //     }
+  //   })
+  // }
+
+  const handlePayment = () => {
+  if (!session?.user?.id) {
+    setError('Veuillez vous connecter pour effectuer le paiement')
+    return
   }
+
+  setIsLoading(true)
+
+  window.kkiapay?.show({
+    amount: formation.price,
+    key: process.env.NEXT_PUBLIC_KKIAPAY_API_KEY,
+    sandbox: true,
+    data: {
+      formationId: formation.id,
+      userId: session.user.id,
+    },
+    callback: async (paymentResponse) => {
+      console.log('Paiement Kkiapay terminé : ', paymentResponse)
+
+      if (paymentResponse.status === "SUCCESS") {
+        try {
+          // Appel à ton API Laravel pour enregistrer l'étudiant
+          const res = await axios.post(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/formation_student`,
+            {
+              formation_id: formation.id,
+              student_id: session.user.id,
+            },
+            {
+              withCredentials: true, // Très important pour Sanctum !
+            }
+          )
+
+          console.log('Réponse API Laravel:', res.data)
+
+          if (res.status === 201) {
+            setPaymentSuccess(true)
+          } else {
+            setError("Erreur lors de l'inscription")
+            setPaymentSuccess(false)
+          }
+        } catch (err) {
+          console.error('Erreur API:', err)
+          setError("Erreur lors de l'inscription")
+          setPaymentSuccess(false)
+        } finally {
+          setIsLoading(false)
+          nextStep()
+        }
+
+      } else {
+        console.error('Paiement échoué', paymentResponse)
+        setPaymentSuccess(false)
+        setIsLoading(false)
+        nextStep()
+      }
+    },
+    theme: {
+      primary: "#4f46e5",
+      secondary: "#ffffff"
+    }
+  })
+}
+
 
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },

@@ -693,7 +693,7 @@ return (
   <div className="flex">
     <ToastContainer position="top-right" />
     
-    <aside className="sticky top-0  w-64 max-h-[calc(100vh-100px)] space-y-4 p-4 bg-white">
+    <aside className="sticky fixed z-50 top-20   w-64 max-h-[calc(100vh-100px)] space-y-4 p-4 bg-white">
       <h2 className="mb-2 text-xl font-semibold text-blue-700 text-center">Modules</h2>
       {formation.modules.map((mod, index) => (
         <motion.div
@@ -728,7 +728,7 @@ return (
       ))}
     </aside>
 
-    <main className="w-full p-6 ml-64 space-y-6">
+    <main className="w-full ml-10 space-y-6">
       <h1 className="text-3xl font-bold text-blue-800">{formation.name}</h1>
 
       <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
@@ -740,7 +740,7 @@ return (
       <p className="text-sm text-gray-600">Progression : {progression}%</p>
 
       <img 
-        src={`http://127.0.0.1:8000/${formation.picture}`} 
+        src={`http://127.0.0.1:8000/storage/${formation.picture}`} 
         alt="Image formation" 
         className="object-cover w-full h-64 shadow-md rounded-xl" 
       />

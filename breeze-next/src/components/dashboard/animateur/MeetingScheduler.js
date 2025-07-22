@@ -4,11 +4,17 @@ import { useState } from 'react';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 // import '@livekit/components-react/style.css';
 import axios from '/src/lib/axios';
+import { useRouter } from 'next/navigation';
 
 export default function MeetingScheduler({ formationId, progressLevel, students }) {
   const [date, setDate] = useState('');
   const [token, setToken] = useState('');
   const [roomName, setRoomName] = useState('');
+  const router = useRouter();
+  const { user } = useAuth();
+  if (user.role !== 'teacher') {
+    router.push('/unauthorized');
+  }
 
   const handleScheduleMeeting = async () => {
     try {

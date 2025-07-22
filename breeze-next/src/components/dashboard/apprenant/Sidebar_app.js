@@ -14,13 +14,14 @@ import {
   FaVideo,
 } from "react-icons/fa";
 import { useAuth } from "/src/hooks/auth";
+import { useRouter } from "next/navigation";
 
 const links = [
   { href: "/dashboard/apprenant", label: "Tableau de bord", icon: FaHome },
   { href: "/dashboard/apprenant/profil", label: "Profil", icon: FaUser },
   { href: "/dashboard/apprenant/catalogue", label: "Catalogue de formations", icon: FaBookOpen },
   { href: "/dashboard/apprenant/mes-formations", label: "Mes formations", icon: FaGraduationCap },
-  { href: "/dashboard/apprenant/certificats", label: "Mes certificats", icon: FaFileAlt },
+  { href: "/dashboard/apprenant/certificats", label: "Mes attestations", icon: FaFileAlt },
   { href: "/dashboard/apprenant/demande-stage", label: "Demande de stage", icon: FaEnvelopeOpenText },
    { href: "/dashboard/apprenant/meet", label: "Réunions", icon: FaVideo },
 ];
@@ -29,6 +30,11 @@ export default function SidebarApprenant() {
 
   const { logout } = useAuth()
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+  const { user } = useAuth();
+  if (user.role !== 'student') {
+    router.push('/unauthorized');
+  }
 
   return (
     <div className={`h-screen bg-blue-900 text-white ${open ? "w-64" : "w-16"} transition-all duration-300 flex flex-col`}>

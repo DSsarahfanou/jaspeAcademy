@@ -1,10 +1,16 @@
 "use client";
 
+import { useAuth } from "/src/hooks/auth";
 import { useRouter } from "next/navigation";
 import { FaChalkboardTeacher, FaTools } from "react-icons/fa";
 
 export default function PageIntroFormation({ formation }) {
   const router = useRouter();
+  const { user } = useAuth();
+  if (user.role !== 'student') {
+    router.push('/unauthorized');
+  }
+
 
   const handleCommencer = () => {
     router.push(`/dashboard/apprenant/mes-formations/${formation.id}/modules`);

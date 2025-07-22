@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { FaChartLine, FaShoppingCart, FaUsers, FaEuroSign, FaCalendarAlt, FaBoxOpen, FaRegClock, FaRegChartBar } from 'react-icons/fa';
 import CardStat from '/src/components/dashboard/CardStat';
+import { useAuth } from '../../../../hooks/auth';
+import { useRouter } from 'next/navigation';
 
 const fetchData = async (endpoint, token) => {
     try {
@@ -20,11 +22,18 @@ const fetchData = async (endpoint, token) => {
     }
 };
 
+
+
 // export const metadata = {
 //     title: 'Tableau de bord - Supervision',
 // };
 
 const Dashboard = () => {
+ const router = useRouter();   
+const { user } = useAuth();
+if (user.role !== 'admin') {
+  router.push('/unauthorized');
+}
     const [statsData, setStatsData] = useState([]);
     const [recentActivities, setRecentActivities] = useState([]);
     const [loading, setLoading] = useState(true);

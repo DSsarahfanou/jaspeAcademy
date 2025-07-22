@@ -684,7 +684,6 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
         'App\\Models\\Option' => __DIR__ . '/../..' . '/app/Models/Option.php',
         'App\\Models\\Order' => __DIR__ . '/../..' . '/app/Models/Order.php',
         'App\\Models\\Question' => __DIR__ . '/../..' . '/app/Models/Question.php',
-        'App\\Models\\Quiz' => __DIR__ . '/../..' . '/app/Models/Quiz.php',
         'App\\Models\\Student' => __DIR__ . '/../..' . '/app/Models/Student.php',
         'App\\Models\\Teacher' => __DIR__ . '/../..' . '/app/Models/Teacher.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',

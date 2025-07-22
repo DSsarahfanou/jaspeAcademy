@@ -80,7 +80,6 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\InternshipRequestResponse;
 
 
-
 class FormationStudentController extends Controller
 {
     // 1. Enregistrer l'association formation ↔ étudiant
@@ -89,6 +88,7 @@ class FormationStudentController extends Controller
         $request->validate([
             'formation_id' => 'required|exists:formations,id',
             'student_id' => 'required|exists:users,id',
+            'paymentData' => 'required|array',
         ]);
 
         // Vérifie que l'utilisateur a bien le rôle "student"
@@ -100,18 +100,59 @@ class FormationStudentController extends Controller
             return response()->json(['message' => 'L\'utilisateur n\'est pas un étudiant.'], 403);
         }
 
+        //vérifier si l'utilisateur est déjà inscrit à cette formation
+        $exists = FormationStudent::where('formation_id', $request->formation_id)
+            ->where('student_id', $request->student_id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'Étudiant déjà inscrit.'], 409);
+        }
+
+
+        
+        $student = User::findOrFail($request->student_id);
+        $formation = Formation::findOrFail($request->formation_id);
+        $transactionId = $request->paymentData['transactionId'] ?? uniqid('txn_');
+
+        // Générer PDF
+        $pdf = Pdf::loadView('invoices.receipt', [
+            'student' => $student,
+            'formation' => $formation,
+            'transactionId' => $transactionId,
+        ]);
+
+        $fileName = 'facture_' . $student->id . '_' . time() . '.pdf';
+        $filePath = 'invoices/' . $fileName;
+
         $association = FormationStudent::create([
             'formation_id' => $request->formation_id,
             'student_id' => $request->student_id,
             'progression' => 0, // Initialisation à 0
             'completed_lessons' => [], // Initialisation avec un tableau vide
+            'path_paiement' => $filePath,
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => 'Étudiant inscrit à la formation avec succès.',
             'data' => $association,
         ], 201);
     }
+
+    // 1. 1 Télécharger la facture de paiement de la formation
+    public function downloadInvoice($id)
+    {
+        $record = FormationStudent::findOrFail($id);
+
+        if (!Storage::disk('local')->exists($record->path_paiement)) {
+            abort(404, 'Facture non trouvée.');
+        }
+
+        return Storage::download($record->path_paiement);
+    }
+
+
 
     // 2. Afficher toutes les formations suivies par un étudiant
     public function formationsByStudent($student_id)
@@ -201,10 +242,7 @@ class FormationStudentController extends Controller
         ]);
     }
 
-
-
-
-        // 6. Traiter la demande de stage
+    // 6. Traiter la demande de stage
     public function storeInternshipRequest(Request $request, $formation_id)
     {
         $student_id = $request->user()->id;
@@ -273,8 +311,6 @@ class FormationStudentController extends Controller
             'data' => $formationStudent
         ], 201);
     }
-
-
 
 
     // 7. Lister toutes les demandes de stage (admin)
@@ -366,8 +402,6 @@ class FormationStudentController extends Controller
             'message' => 'Demande mise à jour avec succès et email envoyé'
         ]);
     }
-
-
 
     // 10. Lister les demandes de stage de l'étudiant authentifié
     public function listStudentInternshipRequests(Request $request)

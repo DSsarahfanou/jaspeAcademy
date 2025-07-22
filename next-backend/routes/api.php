@@ -191,11 +191,9 @@
             // Routes pour les étudiants
             Route::get('/student/internship-requests', [FormationStudentController::class, 'listStudentInternshipRequests']);
             Route::get('/student/attestations', [FormationStudentController::class, 'listStudentAttestations']);
-            //Route::get('/student/attestations/{id}/download', [FormationStudentController::class, 'downloadAttestation']);
+            Route::get('/student/attestations/{id}/download', [FormationStudentController::class, 'downloadAttestation']);
             Route::get('/formation_student/{formationId}/internship-requests', [FormationStudentController::class, 'getStudentInternshipRequests']);
 
-
-            //Routes pour les formateurs 
 
             // Routes admin
             Route::middleware('admin')->group(function () {
@@ -227,6 +225,7 @@
 
 
     Route::post('/formation_student', [FormationStudentController::class, 'store']);
+    Route::get('/student/invoice/{id}/download', [FormationStudentController::class, 'downloadInvoice']);
     Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
     Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
     Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);
@@ -258,8 +257,8 @@
         Route::get('/formations/{formation}/meetings', [MeetingController::class, 'index']);
         Route::post('/formations/{formation}/meetings', [MeetingController::class, 'store']);
         Route::post('/meetings/{meeting}/attendance', [MeetingController::class, 'joinMeeting']);
-        Route::middleware('auth:sanctum')->get('/teacher/meetings', [MeetingController::class, 'teacherMeetings']);
-        Route::middleware(['auth:sanctum'])->get('/student/meetings', [MeetingController::class, 'studentMeetings']);
+        Route::get('/teacher/meetings', [MeetingController::class, 'teacherMeetings']);
+        Route::get('/student/meetings', [MeetingController::class, 'studentMeetings']);
         
 
     });

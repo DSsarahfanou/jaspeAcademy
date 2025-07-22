@@ -13,6 +13,9 @@ import {
   FaGraduationCap,
 } from "react-icons/fa";
 import { useAuth } from "/src/hooks/auth";
+import { useRouter } from "next/navigation";
+
+
 
 const links = [
   {
@@ -45,6 +48,11 @@ const links = [
 export default function SidebarAnimateur() {
   const {logout} = useAuth()
   const [open, setOpen] = useState(true);
+   const router = useRouter();   
+  const { user } = useAuth();
+  if (user.role !== 'teacher') {
+    router.push('/unauthorized');
+  }
 
   return (
     <div
