@@ -207,6 +207,22 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             })
     );
 
+// src/hooks/auth.js
+// const { data: user, error, mutate } = useSWR('/api/user', () =>
+//   axios.get('/api/user', {
+//     headers: {
+//       'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+//     }
+//   })
+//   .then(res => res.data)
+//   .catch(error => {
+//     if (error.response?.status === 401 || error.response?.status === 409) {
+//       router.push('/verify-email');
+//     }
+//     throw error;
+//   })
+// );
+
     // const getRedirectPath = (role) => {
     //     const paths = {
     //         admin: '/dashboard/admin',
@@ -259,6 +275,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             }
         }
     };
+    
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
         await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
@@ -305,10 +322,18 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/logout').then(() => mutate());
+            // await axios.post('/logout').then(() => mutate());
+                try {
+        await axios.post('/logout').then(() => mutate());
+    } catch (err) {
+        console.error('Logout failed:', err);
+    // You might want to handle the error more gracefully
+    }
         }
         window.location.pathname = '/login';
     };
+
+
 
 
     useEffect(() => {

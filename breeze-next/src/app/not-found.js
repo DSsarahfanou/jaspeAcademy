@@ -12,7 +12,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center text-center px-4">
       {/* Logo Jaspe Academy */}
       <Image
-        src="/image/logo_jaspe.png" // remplace par le chemin réel de ton logo
+        src="/image/logo_jaspe.png" 
         alt="Jaspe Academy"
         width={100}
         height={100}

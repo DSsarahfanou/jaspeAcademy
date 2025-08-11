@@ -90,7 +90,7 @@ const Navigation = ({ user }) => {
                         </ResponsiveNavLink>
                     </div> */}
 
-                    <div className="pt-4 pb-1 border-t border-gray-200">
+                    <div className="pt-4 pb-1 border-t border-gray-200 ml-9">
                         <div className="flex items-center px-4 space-x-3">
                             <UserAvatar user={user} size={40} />
                         </div>

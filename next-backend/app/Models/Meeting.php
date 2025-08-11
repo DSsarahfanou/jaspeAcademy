@@ -31,6 +31,19 @@ class Meeting extends Model
                     ->withTimestamps();
     }
 
+
+    // Dans le modèle Meeting
+public function scopeAvailableForStudent($query, $studentId, $progressionLevel)
+{
+    return $query->whereDoesntHave('students', function ($q) use ($studentId) {
+            $q->where('student_id', $studentId);
+        })
+        ->whereDoesntHave('students', function ($q) use ($studentId, $progressionLevel) {
+            $q->where('student_id', $studentId)
+              ->where('meeting_student.level', '>=', $progressionLevel);
+        });
+}
+
     
 }
 

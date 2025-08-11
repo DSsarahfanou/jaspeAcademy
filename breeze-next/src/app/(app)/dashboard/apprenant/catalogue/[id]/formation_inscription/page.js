@@ -14,6 +14,7 @@ export default function FormationInscriptionPage({ params }) {
   const { id } = params
   const router = useRouter()
   const [formation, setFormation] = useState(null)
+  const [facture, setFacture] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
@@ -71,6 +72,8 @@ export default function FormationInscriptionPage({ params }) {
 
       console.log(inscriptionResponse)
       if (inscriptionResponse.data.success) {
+        setFacture(inscriptionResponse.data.invoice_url);
+        console.log(facture)
         setPaymentSuccess(true);
         nextStep();
       }
@@ -301,9 +304,9 @@ export default function FormationInscriptionPage({ params }) {
                         Commencer maintenant
                       </Link>
                       <a
-                        href={`http://localhost:8000/api/student/invoice/${formation.id}/download`}
+                        href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${facture}`}
                         download
-                        className="text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                        className="text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700 px-6 py-3"
                       >
                         Télécharger la facture
                       </a>

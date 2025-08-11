@@ -161,6 +161,7 @@
                     * Package Service Providers...
                     */
                     Barryvdh\DomPDF\ServiceProvider::class, // 👈 ici on ajoute DomPDF
+                    SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
                     /*
                     * Application Service Providers...
@@ -218,7 +219,9 @@
                     'Validator' => Illuminate\Support\Facades\Validator::class,
                     'View' => Illuminate\Support\Facades\View::class,
                     'PDF' => Barryvdh\DomPDF\Facade\Pdf::class, // 👈 ici on ajoute DomPDF
-                ],
+                    'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
+
+                ], 
 
 
 

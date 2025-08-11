@@ -36,10 +36,10 @@ if (!stats) {
           count={stats.formations_terminees} label="Formations terminées" />
 
         <DashboardCard icon={<FaCheckCircle className="text-green-600 text-3xl mr-4" />} 
-          count={stats.meetings_en_cours} label="Meetings en cours" />
+          count={stats.meetings_disponibles} label="Meetings en cours" />
 
         <DashboardCard icon={<FaCheckCircle className="text-green-600 text-3xl mr-4" />} 
-          count={stats.meetings_passes} label="Meetings passés" />
+           count={stats.meetings_completes} label="Meetings passés" />
 
         <DashboardCard icon={<FaCheckCircle className="text-green-600 text-3xl mr-4" />} 
           count={stats.demandes_soumises} label="Demandes soumises" />

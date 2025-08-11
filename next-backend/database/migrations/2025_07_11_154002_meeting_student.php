@@ -16,7 +16,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('meeting_id')->constrained()->onDelete('cascade');
         $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-        $table->integer('level')->default(false);
+        $table->integer('level')->default(0);
         $table->timestamps();
 });
     }

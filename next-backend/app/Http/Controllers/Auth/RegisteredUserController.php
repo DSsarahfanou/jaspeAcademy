@@ -64,13 +64,17 @@ class RegisteredUserController extends Controller
         $user->assignRole($role);
     
         event(new Registered($user));
+        
         Auth::login($user);
     
         // Générer un token Sanctum
         $token = $user->createToken('auth_token')->plainTextToken;
     
         return response()->json([
+            'message' => 'Registration successful! Please check your email for verification.',
             'user' => $user->only(['id', 'name', 'email', 'role']),
+            // 'token' => $token,
+            
             'token' => $token,
         ], 201);
     }

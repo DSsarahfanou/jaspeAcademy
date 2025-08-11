@@ -130,35 +130,107 @@ class MeetingController extends Controller
     //     return response()->json($meetings);
     // }
 
-    public function studentMeetings(Request $request)
-    {
-        $student = $request->user();
+    // public function studentMeetings(Request $request)
+    // {
+    //     $student = $request->user();
 
-        // On récupère la progression de l'étudiant pour chaque formation
-        $formationProgressions = \App\Models\FormationStudent::where('student_id', $student->id)->get();
+    //     // On récupère la progression de l'étudiant pour chaque formation
+    //     $formationProgressions = \App\Models\FormationStudent::where('student_id', $student->id)->get();
 
-        $meetings = collect();
+    //     $meetings = collect();
 
-        foreach ($formationProgressions as $fs) {
-            // Pour cette formation, regarder si l'étudiant a déjà passé ce niveau
-            $formationMeetings = Meeting::where('formation_id', $fs->formation_id)
-                ->where('progression_level', '<=', $fs->progression)
-                ->whereDoesntHave('students', function ($q) use ($student) {
-                    $q->where('student_id', $student->id);
-                })
-                ->whereDoesntHave('students', function ($q) use ($student, $fs) {
-                    $q->where('student_id', $student->id)
-                    ->wherePivot('level', $fs->progression_level);
-                })
-                ->with(['formation', 'teacher'])
-                ->get();
+    //     foreach ($formationProgressions as $fs) {
+    //         // Pour cette formation, regarder si l'étudiant a déjà passé ce niveau
+    //         $formationMeetings = Meeting::where('formation_id', $fs->formation_id)
+    //             ->where('progression_level', '<=', $fs->progression)
+    //             ->whereDoesntHave('students', function ($q) use ($student) {
+    //                 $q->where('student_id', $student->id);
+    //             })
+    //             ->whereDoesntHave('students', function ($q) use ($student, $fs) {
+    //                 $q->where('student_id', $student->id)
+    //                 ->wherePivot('level', $fs->progression_level);
+    //             })
+    //             ->with(['formation', 'teacher'])
+    //             ->get();
 
-            $meetings = $meetings->merge($formationMeetings);
-        }
+    //         $meetings = $meetings->merge($formationMeetings);
+    //     }
 
-        return response()->json($meetings);
+    //     return response()->json($meetings);
+    // }
+
+
+//     public function studentMeetings(Request $request)
+// {
+//     $student = $request->user();
+
+//     $formationProgressions = FormationStudent::where('student_id', $student->id)->get();
+
+//     $meetings = collect();
+
+//     foreach ($formationProgressions as $fs) {
+//         $formationMeetings = Meeting::where('formation_id', $fs->formation_id)
+//             // Meetings où le niveau requis est inférieur à la progression de l'étudiant
+//             ->where('progression_level', '<=', $fs->progression)
+            
+//             // Exclure les meetings déjà complétés par l'étudiant
+//             ->whereDoesntHave('students', function ($q) use ($student) {
+//                 $q->where('student_id', $student->id);
+//             })
+            
+//             // Exclure les meetings où l'étudiant a déjà atteint ce niveau
+//             ->whereDoesntHave('students', function ($q) use ($student, $fs) {
+//                 $q->where('student_id', $student->id)
+//                   ->where('meeting_student.level', '>=', $fs->progression);
+//             })
+            
+//             ->with(['formation', 'teacher'])
+//             ->get();
+
+//         $meetings = $meetings->merge($formationMeetings);
+//     }
+
+//     return response()->json($meetings);
+// }
+
+
+
+public function studentMeetings(Request $request)
+{
+    $student = $request->user();
+
+    $formationProgressions = FormationStudent::where('student_id', $student->id)->get();
+
+    $availableMeetings = collect();
+    $pastMeetings = collect();
+
+    foreach ($formationProgressions as $fs) {
+        // Meetings disponibles (non complétés)
+        $available = Meeting::where('formation_id', $fs->formation_id)
+            ->where('progression_level', '<=', $fs->progression)
+            ->whereDoesntHave('students', function ($q) use ($student) {
+                $q->where('student_id', $student->id);
+            })
+            ->with(['formation', 'teacher'])
+            ->get();
+
+        // Meetings déjà complétés
+        $completed = Meeting::where('formation_id', $fs->formation_id)
+            ->whereHas('students', function ($q) use ($student) {
+                $q->where('student_id', $student->id);
+            })
+            ->with(['formation', 'teacher'])
+            ->get();
+
+        $availableMeetings = $availableMeetings->merge($available);
+        $pastMeetings = $pastMeetings->merge($completed);
     }
 
+    return response()->json([
+        'available' => $availableMeetings,
+        'completed' => $pastMeetings
+    ]);
+}
 
 
 

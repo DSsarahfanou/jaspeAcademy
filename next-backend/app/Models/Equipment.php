@@ -34,7 +34,7 @@ class Equipment extends Model
 
 
 
-    public function equipments_orders()
+    public function equipment_orders()
     {
         return $this->belongsToMany(EquipmentFormation::class, 'equipment_orders', 'equipment_id', 'order_id');
     }

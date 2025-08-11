@@ -110,6 +110,7 @@
         use App\Http\Controllers\QuizController;
         use App\Http\Controllers\LiveKitController;
         use App\Http\Controllers\MeetingController;
+        use App\Http\Controllers\DashboardController;
 
 
 
@@ -152,6 +153,9 @@
 
         Route::apiResource('     /api/                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ', LessonController::class);
         Route::apiResource('orders', OrderController::class);
+         Route::post('/orders', [OrderController::class, 'store']);
+         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');   
+        Route::get('/orders_student/', [OrderController::class, 'showOrderStudent']);    
         Route::apiResource('requests', RequestCourseController::class);
 
 
@@ -193,6 +197,8 @@
             Route::get('/student/attestations', [FormationStudentController::class, 'listStudentAttestations']);
             Route::get('/student/attestations/{id}/download', [FormationStudentController::class, 'downloadAttestation']);
             Route::get('/formation_student/{formationId}/internship-requests', [FormationStudentController::class, 'getStudentInternshipRequests']);
+            Route::get('/student/dashboard', [DashboardController::class, 'getStats']);
+
 
 
             // Routes admin
@@ -225,7 +231,7 @@
 
 
     Route::post('/formation_student', [FormationStudentController::class, 'store']);
-    Route::get('/student/invoice/{id}/download', [FormationStudentController::class, 'downloadInvoice']);
+    Route::get('/student/invoice/{id}/download', [FormationStudentController::class, 'downloadInvoice'])->name('download.invoice');;
     Route::get('/formation_student/{student_id}/formations', [FormationStudentController::class, 'formationsByStudent']);
     Route::get('/formation_student/{formation_id}/students', [FormationStudentController::class, 'studentsByFormation']);
     Route::get('/formation_student/{formation_id}/progression', [FormationStudentController::class, 'showProgression']);

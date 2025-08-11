@@ -103,6 +103,16 @@ class Formation extends Model
 
     //Fin
 
+    
+    // Début :
+    // Ajout de la relation entre Formation et Meetings : 
+    // Signification :  Une formation contient zero ou plusieurs meetings. 
+    public function meetings()
+    {
+        return $this->hasMany(Meeting::class);
+    }
+    //Fin
+
 
 
 }

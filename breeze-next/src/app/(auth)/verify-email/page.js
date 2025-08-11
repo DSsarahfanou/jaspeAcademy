@@ -5,12 +5,46 @@ import { useAuth } from '/src/hooks/auth'
 import { useState } from 'react'
 
 const Page = () => {
-    const { logout, resendEmailVerification } = useAuth({
+    const { user, logout, resendEmailVerification } = useAuth({
         middleware: 'auth',
         redirectIfAuthenticated: '/dashboard',
     })
 
     const [status, setStatus] = useState(null)
+
+    // Rediriger si l'email est déjà vérifié
+    useEffect(() => {
+        if (user?.email_verified_at) {
+            window.location.href = '/dashboard'
+        }
+    }, [user])
+
+// src/app/verify-email/page.jsx
+// 'use client'
+// import { useEffect, useState } from 'react'
+// import { useRouter } from 'next/navigation'
+// import Button from '/src/components/Button'
+// import { useAuth } from '/src/hooks/auth'
+
+// export default function VerifyEmail() {
+//        const { user, logout, resendEmailVerification } = useAuth()
+//        const [status, setStatus] = useState(null)
+
+
+
+// useEffect(() => {
+//   if (typeof window !== 'undefined') {
+//     const params = new URL(window.location.href).searchParams
+//     const token = params.get('token')
+    
+//     if (token) {
+//       localStorage.setItem('token', token)
+//       router.push('/dashboard')
+//     }
+//   }
+// }, [])
+
+
 
     return (
         <>
@@ -44,4 +78,4 @@ const Page = () => {
     )
 }
 
-export default Page
+// export default Page

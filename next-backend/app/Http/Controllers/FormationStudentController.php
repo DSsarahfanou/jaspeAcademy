@@ -83,6 +83,64 @@ use App\Mail\InternshipRequestResponse;
 class FormationStudentController extends Controller
 {
     // 1. Enregistrer l'association formation ↔ étudiant
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'formation_id' => 'required|exists:formations,id',
+    //         'student_id' => 'required|exists:users,id',
+    //         'paymentData' => 'required|array',
+    //     ]);
+
+    //     // Vérifie que l'utilisateur a bien le rôle "student"
+    //     $student = User::where('id', $request->student_id)
+    //                    ->where('role', 'student')
+    //                    ->first();
+
+    //     if (!$student) {
+    //         return response()->json(['message' => 'L\'utilisateur n\'est pas un étudiant.'], 403);
+    //     }
+
+    //     //vérifier si l'utilisateur est déjà inscrit à cette formation
+    //     $exists = FormationStudent::where('formation_id', $request->formation_id)
+    //         ->where('student_id', $request->student_id)
+    //         ->exists();
+
+    //     if ($exists) {
+    //         return response()->json(['message' => 'Étudiant déjà inscrit.'], 409);
+    //     }
+
+
+        
+    //     $student = User::findOrFail($request->student_id);
+    //     $formation = Formation::findOrFail($request->formation_id);
+    //     $transactionId = $request->paymentData['transactionId'] ?? uniqid('txn_');
+
+    //     // Générer PDF
+    //     $pdf = Pdf::loadView('invoices.receipt', [
+    //         'student' => $student,
+    //         'formation' => $formation,
+    //         'transactionId' => $transactionId,
+    //     ]);
+
+    //     $fileName = 'facture_' . $student->id . '_' . time() . '.pdf';
+    //     $filePath = 'invoices/' . $fileName;
+
+    //     $association = FormationStudent::create([
+    //         'formation_id' => $request->formation_id,
+    //         'student_id' => $request->student_id,
+    //         'progression' => 0, // Initialisation à 0
+    //         'completed_lessons' => [], // Initialisation avec un tableau vide
+    //         'path_paiement' => $filePath,
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Étudiant inscrit à la formation avec succès.',
+    //         'data' => $association,
+    //     ], 201);
+    // }
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -91,61 +149,59 @@ class FormationStudentController extends Controller
             'paymentData' => 'required|array',
         ]);
 
-        // Vérifie que l'utilisateur a bien le rôle "student"
+        // Vérification du rôle
         $student = User::where('id', $request->student_id)
-                       ->where('role', 'student')
-                       ->first();
+                    ->where('role', 'student')
+                    ->firstOrFail();
 
-        if (!$student) {
-            return response()->json(['message' => 'L\'utilisateur n\'est pas un étudiant.'], 403);
-        }
-
-        //vérifier si l'utilisateur est déjà inscrit à cette formation
-        $exists = FormationStudent::where('formation_id', $request->formation_id)
-            ->where('student_id', $request->student_id)
-            ->exists();
-
-        if ($exists) {
+        // Vérification de l'inscription existante
+        if (FormationStudent::where('formation_id', $request->formation_id)
+                            ->where('student_id', $request->student_id)
+                            ->exists()) {
             return response()->json(['message' => 'Étudiant déjà inscrit.'], 409);
         }
 
+        // Création du dossier si inexistant
+        Storage::disk('public')->makeDirectory('invoices');
 
-        
-        $student = User::findOrFail($request->student_id);
-        $formation = Formation::findOrFail($request->formation_id);
-        $transactionId = $request->paymentData['transactionId'] ?? uniqid('txn_');
-
-        // Générer PDF
+        // Génération du PDF
         $pdf = Pdf::loadView('invoices.receipt', [
             'student' => $student,
-            'formation' => $formation,
-            'transactionId' => $transactionId,
+            'formation' => Formation::find($request->formation_id),
+            'transactionId' => $request->paymentData['transactionId'] ?? uniqid('txn_'),
         ]);
 
-        $fileName = 'facture_' . $student->id . '_' . time() . '.pdf';
-        $filePath = 'invoices/' . $fileName;
+        $fileName = 'facture_'.$student->id.'_'.time().'.pdf';
+        $filePath = 'invoices/'.$fileName;
 
+        // Sauvegarde du PDF
+        Storage::disk('public')->put($filePath, $pdf->output());
+
+        // Création de l'association
         $association = FormationStudent::create([
             'formation_id' => $request->formation_id,
             'student_id' => $request->student_id,
-            'progression' => 0, // Initialisation à 0
-            'completed_lessons' => [], // Initialisation avec un tableau vide
+            'progression' => 0,
+            'completed_lessons' => [],
             'path_paiement' => $filePath,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Étudiant inscrit à la formation avec succès.',
+            'message' => 'Étudiant inscrit avec succès.',
             'data' => $association,
+            'invoice_url' => $filePath,
         ], 201);
     }
+
+
 
     // 1. 1 Télécharger la facture de paiement de la formation
     public function downloadInvoice($id)
     {
         $record = FormationStudent::findOrFail($id);
 
-        if (!Storage::disk('local')->exists($record->path_paiement)) {
+        if (!Storage::disk('public')->exists($record->path_paiement)) {
             abort(404, 'Facture non trouvée.');
         }
 
@@ -155,18 +211,53 @@ class FormationStudentController extends Controller
 
 
     // 2. Afficher toutes les formations suivies par un étudiant
-    public function formationsByStudent($student_id)
-    {
-        $student = User::where('id', $student_id)
-                       ->where('role', 'student')
-                       ->firstOrFail();
+    // public function formationsByStudent($student_id)
+    // {
+    //     $student = User::where('id', $student_id)
+    //                    ->where('role', 'student')
+    //                    ->firstOrFail();
 
-        $formations = $student->studentFormations()->with('teachers')->get();
+    //     $formations = $student->studentFormations()->with('teachers')->get();
 
-        return response()->json([
-            'formations' => $formations
-        ]);
-    }
+    //     return response()->json([
+    //         'formations' => $formations
+    //     ]);
+    // }
+
+public function formationsByStudent($student_id)
+{
+    $student = User::where('id', $student_id)
+                   ->where('role', 'student')
+                   ->firstOrFail();
+
+    // Chargez les formations avec les données du pivot et des enseignants
+    $formations = FormationStudent::where('student_id', $student_id)
+        ->with(['formation.teachers', 'formation.meetings'])
+        ->get()
+        ->map(function($formationStudent) {
+            // Ajoutez les données du pivot à l'objet formation pour un accès facile
+            $formation = $formationStudent->formation;
+            $formation->pivot_data = [
+                'progression' => $formationStudent->progression,
+                'completed_lessons' => $formationStudent->completed_lessons,
+                'attestation' => $formationStudent->attestation
+            ];
+            return $formation;
+        })
+        ->groupBy(function($formation) {
+            return $formation->pivot_data['progression'] >= 100 ? 'completed' : 'in_progress';
+        });
+
+    return response()->json([
+        'completed_formations' => $formations->get('completed', []),
+        'in_progress_formations' => $formations->get('in_progress', []),
+        'student_progress' => $formations->mapWithKeys(function($group, $key) {
+            return [$key => $group->map(function($formation) {
+                return $formation->pivot_data['progression'];
+            })];
+        })
+    ]);
+}
 
     // 3. Afficher tous les étudiants d’une formation
     public function studentsByFormation($formation_id)

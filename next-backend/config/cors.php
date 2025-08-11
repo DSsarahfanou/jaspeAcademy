@@ -1,5 +1,5 @@
 <?php
-
+// next-backend\config\cors.php
 return [
 
     /*
@@ -15,7 +15,15 @@ return [
     |
     */
 
-    'paths' => ['*'],
+    
+    'paths' => [
+        'api/*',
+        'login',        
+        'logout',       
+        'sanctum/csrf-cookie',
+        'user',
+    ],
+
 
     'allowed_methods' => ['*'],
 

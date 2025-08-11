@@ -128,15 +128,33 @@ export default function Register() {
             }
         })
 
-        try {
-            await register({ 
-                data: formDataToSend,
-                setErrors: (errs) => setErrors(errs)
-            })
-        } finally {
-            setIsSubmitting(false)
-        }
+        // try {
+        //     await register({ 
+        //         data: formDataToSend,
+        //         setErrors: (errs) => setErrors(errs)
+        //     })
+        // } finally {
+        //     setIsSubmitting(false)
+        // }
+
+
+          try {
+    const response = await register({ 
+      data: formDataToSend,
+      setErrors: (errs) => setErrors(errs)
+    });
+    
+    // Stockez le token dans localStorage
+    localStorage.setItem('token', response.token);
+    
+    // Redirigez vers la page de vérification
+    router.push('/verify-email');
+  } catch (error) {
+    console.error('Registration error:', error);
+  }
     }
+
+
 
     const progressPercentage = (step / 3) * 100
 

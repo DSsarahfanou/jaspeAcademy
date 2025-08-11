@@ -1,0 +1,73 @@
+/* Styles de base */
+.roomContainer {
+  height: 100vh;
+  background-color: #1a1a2e;
+  position: relative;
+}
+
+.gridLayout {
+  height: calc(100vh - 80px);
+}
+
+/* Styles pour l'état de chargement */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #16213e;
+  color: #e6e6e6;
+}
+
+.spinner {
+  width: 4rem;
+  height: 4rem;
+  border: 0.5rem solid rgba(74, 128, 240, 0.2);
+  border-top-color: #4a80f0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Styles pour l'état d'erreur */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #0f3460;
+  color: #ffffff;
+  padding: 2rem;
+  text-align: center;
+}
+
+.errorTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.errorMessage {
+  margin-bottom: 2rem;
+}
+
+.retryButton {
+  padding: 0.5rem 1rem;
+  background-color: #4a80f0;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #3a70e0;
+}

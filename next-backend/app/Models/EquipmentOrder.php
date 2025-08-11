@@ -22,4 +22,11 @@ class EquipmentOrder extends Model
     {
         return $this->belongsTo(Order::class, 'order_id');
     }
+
+    // EquipmentOrder.php
+    public function equipment()
+    {
+        return $this->belongsTo(Equipment::class, 'equipment_id');
+    }
+
 }

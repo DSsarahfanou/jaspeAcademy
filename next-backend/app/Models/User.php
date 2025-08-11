@@ -7,8 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable  implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -55,7 +56,13 @@ class User extends Authenticatable
         return $this->hasMany(Formation::class, 'user_id');
     }
 
-
+    public function meetings()
+    {
+        // Pour les users de type student
+        return $this->belongsToMany(Meeting::class, 'meeting_student', 'student_id', 'meeting_id')
+                            ->withPivot('level')
+                            ->withTimestamps();
+    }
 
 
 

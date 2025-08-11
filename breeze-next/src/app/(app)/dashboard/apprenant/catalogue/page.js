@@ -201,7 +201,7 @@ export default function FormationsManagementPage() {
                     Fermer
                   </motion.button>
                   <Link
-                    href="/shop"
+                    href={`/dashboard/apprenant/shop/#${selectedFormation.name}`}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                   >
                     Acheter maintenant
