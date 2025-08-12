@@ -235,7 +235,7 @@ export default function FormationsManagementPage() {
                     <FaTimes className="mr-2" /> Fermer
                   </motion.button>
                   <Link
-                    href="/shop"
+                    href="/dashboard/apprenant/shop"
                     className="px-6 py-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
                   >
                     <FaPlus className="mr-2" />Acheter equipments

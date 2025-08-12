@@ -8,7 +8,6 @@ import {
   FaHome,
   FaBook,
   FaSignInAlt,
-  FaShoppingCart,
   FaUserCircle,
   FaSignOutAlt,
   FaGraduationCap,
@@ -67,7 +66,7 @@ const LoginLinks = () => {
         <div className="items-center hidden gap-4 sm:flex">
           {user ? (
             <>
-              <Link href= {getRedirectPath(user.role)}  className={linkClasses("/dashboard", pathname)}>
+              <Link href={getRedirectPath(user.role)}  className={linkClasses("/dashboard", pathname)}>
                 <FaUserCircle />
                 <span>Dashboard</span>
               </Link>
@@ -89,10 +88,6 @@ const LoginLinks = () => {
                 <FaBook /> Formations
               </Link>
 
-              <Link href="/shop" className={linkClasses("/shop", pathname)}>
-                <FaShoppingCart /> Shop
-              </Link>
-
               <Link
                 href="/login"
                 className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -109,7 +104,7 @@ const LoginLinks = () => {
         <div className="px-4 py-3 space-y-2 bg-white border-t border-gray-200 shadow-md sm:hidden">
           {user ? (
             <>
-              <Link href= {getRedirectPath(user.role)}  onClick={toggleMenu} className={linkClasses("/dashboard", pathname)}>
+              <Link href={getRedirectPath(user.role)}  onClick={toggleMenu} className={linkClasses("/dashboard", pathname)}>
                 <FaUserCircle /> Dashboard
               </Link>
 
@@ -131,10 +126,6 @@ const LoginLinks = () => {
 
               <Link href="/#formation" onClick={toggleMenu} className={linkClasses("/formations", pathname)}>
                 <FaBook /> Formations
-              </Link>
-
-              <Link href="/shop" onClick={toggleMenu} className={linkClasses("/shop", pathname)}>
-                <FaShoppingCart /> Shop
               </Link>
 
               <Link

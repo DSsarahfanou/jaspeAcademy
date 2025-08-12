@@ -56,9 +56,23 @@ export default function FormationsManagementPage() {
                  <p className="text-sm text-gray-600 line-clamp-2">{formation.formation_details || 'Aucune description'}</p>
                 <p className="text-sm">Prix : {formation.price} FCFA</p>
                 <div className="flex flex-col gap-4 mt-6 sm:flex-row">
-                  <Button className="bg-black" onClick={() => router.push(`/dashboard/apprenant/catalogue/${formation.id}/formation_inscription`)}>
+                  {/* <Button className="bg-black" onClick={() => router.push(`/dashboard/apprenant/catalogue/${formation.id}/formation_inscription`)}>
                     Suivre la formation
+                  </Button> */}
+
+                  <Button
+                    className="bg-black"
+                    onClick={() => {
+                      if (formation.is_subscribed) {
+                        router.push(`/dashboard/apprenant/mes-formations/${formation.id}`);
+                      } else {
+                        router.push(`/dashboard/apprenant/catalogue/${formation.id}/formation_inscription`);
+                      }
+                    }}
+                  >
+                    {formation.is_subscribed ? "Continuer la formation" : "Suivre la formation"}
                   </Button>
+
                   
                   {/* <Link
                     href={`/dashboard/apprenant/formation_inscription`}

@@ -21,8 +21,7 @@ export default function Footer() {
           <h3 className="mb-4 text-lg font-semibold">Navigation</h3>
           <ul className="space-y-2 text-sm text-gray-400">
             <li><a href="/" className="hover:text-white">Accueil</a></li>
-            <li><a href="/produits" className="hover:text-white">Formations</a></li>
-            <li><a href="/apropos" className="hover:text-white">Shop</a></li>
+            <li><a href="/formations" className="hover:text-white">Formations</a></li>
           </ul>
         </div>
 

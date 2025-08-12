@@ -17,15 +17,52 @@ class FormationController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // public function index()
+    // {
+    //     $formations = Formation::with(['modules.lessons', 'equipments'])->get();
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'data' => $formations
+    //     ]);
+    // }
+
+
     public function index()
     {
-        $formations = Formation::with(['modules.lessons', 'equipments'])->get();
+        $user = auth()->user();
+
+        $formations = Formation::with(['modules.lessons', 'equipments'])
+            ->when($user, function ($query) use ($user) {
+                // On compte le nombre d'inscriptions pour cet utilisateur
+                $query->withCount([
+                    'students as is_subscribed' => function ($q) use ($user) {
+                        $q->where('student_id', $user->id);
+                    }
+                ]);
+            }, function ($query) {
+                // Si pas connecté, on met toujours 0
+                $query->withCount([
+                    'students as is_subscribed' => function ($q) {
+                        $q->whereRaw('1 = 0'); // Toujours faux
+                    }
+                ]);
+            })
+            ->get();
+
+        // Transformer le compteur en booléen (true/false)
+        $formations->transform(function ($formation) {
+            $formation->is_subscribed = $formation->is_subscribed > 0;
+            return $formation;
+        });
 
         return response()->json([
             'status' => 'success',
             'data' => $formations
         ]);
     }
+
+
 
     /**
      * Store a newly created resource in storage.
