@@ -46,6 +46,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\FormationStudent;
 use App\Models\Meeting;
+use App\Models\Formations;
+use App\Models\Formation;
 
 class DashboardController extends Controller
 {
@@ -90,7 +92,65 @@ class DashboardController extends Controller
             'attestations' => $formationsStats->attestations ?? 0,
         ]);
     }
+
+
+
+
+    //Teachers
+    public function teacherDashboard(Request $request)
+    {
+        $teacher = $request->user();
+
+        // 1. Récupérer réunions + compter
+        $meetings = Meeting::where('teacher_id', $teacher->id)
+            ->with('formation')
+            ->orderBy('scheduled_at', 'asc')
+            ->get();
+
+        $meetingsCount = $meetings->count();
+
+        // Exemple d’évolution statique (tu peux remplacer par un vrai calcul si dispo)
+        $meetingsTrend = "+12% ce mois-ci";
+
+        // 2. Récupérer formations du teacher + compter
+        $formations = Formation::where('user_id', $teacher->id)->get();
+        $formationsCount = $formations->count();
+        $formationsTrend = "Stable depuis 3 mois";
+
+        // 3. Nombre d’apprenants distincts sur toutes ses formations
+        // Approche : récupérer tous les étudiants liés aux formations du teacher
+        $studentsCount = \DB::table('formation_students')
+            ->whereIn('formation_id', $formations->pluck('id'))
+            ->distinct('student_id')
+            ->count('student_id');
+        $studentsTrend = "+7% depuis la semaine dernière";
+
+        // On peut envoyer les meetings et notifications (vide pour l’instant)
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'meetingsCount' => $meetingsCount,
+                'meetingsTrend' => $meetingsTrend,
+                'formationsCount' => $formationsCount,
+                'formationsTrend' => $formationsTrend,
+                'studentsCount' => $studentsCount,
+                'studentsTrend' => $studentsTrend,
+                'meetings' => $meetings->map(function ($meeting) {
+                    return [
+                        'id' => $meeting->id,
+                        'title' => $meeting->title ?? 'Réunion',
+                        'datetime' => $meeting->datetime,
+                        'formation' => [
+                            'id' => $meeting->formation?->id,
+                            'name' => $meeting->formation?->name,
+                        ],
+                    ];
+                }),
+                'notifications' => [], // plus tard
+            ],
+        ]);
     }
+}
 
 
 
