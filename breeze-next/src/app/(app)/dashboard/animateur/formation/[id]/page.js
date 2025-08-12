@@ -29,11 +29,10 @@ export default function FormationDetail() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-md">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-800">
-          {formation.name}
-        </h1>
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-md space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h1 className="text-4xl font-extrabold text-gray-800">{formation.name}</h1>
         <Link
           href={`/dashboard/animateur/formation/${id}/reunions/create`}
           className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
@@ -42,18 +41,31 @@ export default function FormationDetail() {
         </Link>
       </div>
 
-      <section className="mb-8">
+      {/* Progression globale */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2 text-gray-700 flex items-center gap-2">
+          Progression globale
+          <span className="ml-auto text-gray-600 font-medium">{formation.progression ?? 0}%</span>
+        </h2>
+        <div className="w-full bg-gray-200 rounded-full h-5 overflow-hidden shadow-inner">
+          <div
+            style={{ width: `${formation.progression ?? 0}%` }}
+            className="h-5 bg-purple-600 transition-all duration-500"
+          />
+        </div>
+      </div>
+
+      {/* Modules & Leçons */}
+      <section>
         <h2 className="text-2xl font-semibold mb-4 text-gray-700">Modules & Leçons</h2>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {formation.modules.map((module) => (
             <div
               key={module.id}
-              className="p-4 bg-gray-50 rounded-xl shadow-sm border border-gray-200"
+              className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-200"
             >
-              <h3 className="font-bold text-lg text-gray-800 mb-2">
-                {module.title}
-              </h3>
-              <ul className="list-disc ml-6 text-gray-600">
+              <h3 className="font-bold text-lg text-gray-800 mb-3">{module.title}</h3>
+              <ul className="list-disc ml-6 text-gray-600 space-y-1">
                 {module.lessons.map((lesson) => (
                   <li key={lesson.id}>{lesson.title}</li>
                 ))}
@@ -63,7 +75,8 @@ export default function FormationDetail() {
         </div>
       </section>
 
-      <section className="mb-8">
+      {/* Équipements */}
+      <section>
         <h2 className="text-2xl font-semibold mb-4 text-gray-700">Équipements</h2>
         <ul className="list-disc ml-6 text-gray-600">
           {formation.equipments.map((equipment) => (
@@ -72,6 +85,7 @@ export default function FormationDetail() {
         </ul>
       </section>
 
+      {/* Apprenants */}
       <section>
         <h2 className="text-2xl font-semibold mb-4 text-gray-700">Apprenants</h2>
         <div className="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
@@ -79,13 +93,9 @@ export default function FormationDetail() {
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Nom</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">
-                  Progression (%)
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">
-                  Leçons complétées
-                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Progression (%)</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Score</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -94,15 +104,13 @@ export default function FormationDetail() {
                   key={student.id}
                   className="border-t hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 text-gray-800">{student.name}</td>
-                  <td className="px-6 py-4 text-gray-800">
-                    {student.progression ?? "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-800">
-                    {student.completed_lessons?.join(", ") ?? "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-800">
-                    {student.score ?? "—"}
+                  <td className="px-6 py-4 text-gray-800 font-medium">{student.name} {student.surname}</td>
+                  <td className="px-6 py-4 text-gray-800">{student.progression ?? "—"}</td>
+                  <td className="px-6 py-4 text-gray-800">{student.score ?? "—"}</td>
+                  <td className="px-6 py-4 text-purple-600 underline cursor-pointer select-none">
+                    <Link href={`/dashboard/animateur/apprenants/${student.id}`}>
+                      Voir détails
+                    </Link>
                   </td>
                 </tr>
               ))}

@@ -274,5 +274,8 @@
 
     Route::get('/teacher/formations', [FormationController::class, 'indexForTeacher']);
     Route::get('/teacher/formations/{id}', [FormationController::class, 'showToTeacher']);
+    Route::middleware('auth:sanctum')->get('/teacher/apprenants', [TeacherFormationController::class, 'teacherStudents']);
+    Route::middleware(['auth:sanctum'])->get('/teacher/apprenants/{id}', [TeacherFormationController::class, 'teacherStudentDetail']);
+
 
                 ?>

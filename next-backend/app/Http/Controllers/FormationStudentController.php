@@ -224,40 +224,40 @@ class FormationStudentController extends Controller
     //     ]);
     // }
 
-public function formationsByStudent($student_id)
-{
-    $student = User::where('id', $student_id)
-                   ->where('role', 'student')
-                   ->firstOrFail();
+    public function formationsByStudent($student_id)
+    {
+        $student = User::where('id', $student_id)
+                    ->where('role', 'student')
+                    ->firstOrFail();
 
-    // Chargez les formations avec les données du pivot et des enseignants
-    $formations = FormationStudent::where('student_id', $student_id)
-        ->with(['formation.teachers', 'formation.meetings'])
-        ->get()
-        ->map(function($formationStudent) {
-            // Ajoutez les données du pivot à l'objet formation pour un accès facile
-            $formation = $formationStudent->formation;
-            $formation->pivot_data = [
-                'progression' => $formationStudent->progression,
-                'completed_lessons' => $formationStudent->completed_lessons,
-                'attestation' => $formationStudent->attestation
-            ];
-            return $formation;
-        })
-        ->groupBy(function($formation) {
-            return $formation->pivot_data['progression'] >= 100 ? 'completed' : 'in_progress';
-        });
+        // Chargez les formations avec les données du pivot et des enseignants
+        $formations = FormationStudent::where('student_id', $student_id)
+            ->with(['formation.teachers', 'formation.meetings'])
+            ->get()
+            ->map(function($formationStudent) {
+                // Ajoutez les données du pivot à l'objet formation pour un accès facile
+                $formation = $formationStudent->formation;
+                $formation->pivot_data = [
+                    'progression' => $formationStudent->progression,
+                    'completed_lessons' => $formationStudent->completed_lessons,
+                    'attestation' => $formationStudent->attestation
+                ];
+                return $formation;
+            })
+            ->groupBy(function($formation) {
+                return $formation->pivot_data['progression'] >= 100 ? 'completed' : 'in_progress';
+            });
 
-    return response()->json([
-        'completed_formations' => $formations->get('completed', []),
-        'in_progress_formations' => $formations->get('in_progress', []),
-        'student_progress' => $formations->mapWithKeys(function($group, $key) {
-            return [$key => $group->map(function($formation) {
-                return $formation->pivot_data['progression'];
-            })];
-        })
-    ]);
-}
+        return response()->json([
+            'completed_formations' => $formations->get('completed', []),
+            'in_progress_formations' => $formations->get('in_progress', []),
+            'student_progress' => $formations->mapWithKeys(function($group, $key) {
+                return [$key => $group->map(function($formation) {
+                    return $formation->pivot_data['progression'];
+                })];
+            })
+        ]);
+    }
 
     // 3. Afficher tous les étudiants d’une formation
     public function studentsByFormation($formation_id)
