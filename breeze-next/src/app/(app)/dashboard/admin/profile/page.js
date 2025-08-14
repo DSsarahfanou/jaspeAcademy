@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '/src/hooks/auth'
 import axios from '/src/lib/axios'
-import { FiUser, FiCamera, FiSave, FiMail, FiPhone, FiKey, FiLock, FiEye, FiEyeOff, FiSun, FiMoon } from 'react-icons/fi'
+import { 
+  FiUser, FiCamera, FiSave, FiMail, FiPhone, 
+  FiKey, FiLock, FiEye, FiEyeOff, FiCalendar 
+} from 'react-icons/fi'
 import { MdShield, MdSchool } from 'react-icons/md'
 import { FaChalkboardTeacher } from 'react-icons/fa'
 
@@ -31,8 +34,6 @@ export default function ProfilPage() {
 
   const isAdmin = user?.role === 'admin'
 
-  
-
   useEffect(() => {
     if (user) {
       setFormData({
@@ -44,7 +45,6 @@ export default function ProfilPage() {
       })
     }
   }, [user])
-
 
   const handleChange = (e, stateSetter) => {
     const { name, value, files } = e.target
@@ -69,9 +69,7 @@ export default function ProfilPage() {
     })
 
     try {
-      await axios.post('/profile/update', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      await axios.post('/profile/update', data)
       await mutate()
       setFeedback({ type: 'success', message: 'Profil mis à jour avec succès !' })
     } catch {
@@ -102,7 +100,7 @@ export default function ProfilPage() {
   const profilePic = previewUrl || user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}+${user?.surname}&background=0D8ABC&color=fff`
 
   const RoleBadge = () => {
-    const baseClass = "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full inline-flex items-center dark:bg-blue-900 dark:text-blue-200"
+    const baseClass = "px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full inline-flex items-center"
     if (user?.role === 'admin') return <span className={baseClass}><MdShield size={14} className="mr-1" /> Admin</span>
     if (user?.role === 'teacher') return <span className={baseClass}><FaChalkboardTeacher size={14} className="mr-1" /> Formateur</span>
     return <span className={baseClass}><MdSchool size={14} className="mr-1" /> Apprenant</span>
@@ -110,21 +108,22 @@ export default function ProfilPage() {
 
   return (
     <div className="max-w-3xl px-6 py-10 mx-auto shadow-lg backdrop-blur-sm bg-white/80 rounded-xl">
-
-
+      
+      {/* Message feedback */}
       {feedback.message && (
-        <div className={`mb-4 p-3 text-sm font-medium border-l-4 rounded-lg animate-fadeIn transition-opacity duration-500 ${
-          feedback.type === 'success' ? 'bg-green-100 text-green-800 border-green-500 dark:bg-green-900 dark:text-green-300' :
-          feedback.type === 'error' ? 'bg-red-100 text-red-800 border-red-500 dark:bg-red-900 dark:text-red-300' :
-          'bg-blue-100 text-blue-800 border-blue-500 dark:bg-blue-900 dark:text-blue-300'
+        <div className={`mb-4 p-3 text-sm font-medium border-l-4 rounded-lg transition-opacity ${
+          feedback.type === 'success' ? 'bg-green-100 text-green-800 border-green-500' :
+          feedback.type === 'error' ? 'bg-red-100 text-red-800 border-red-500' :
+          'bg-blue-100 text-blue-800 border-blue-500'
         }`}>
           {feedback.message}
         </div>
       )}
 
+      {/* En-tête profil */}
       <div className="flex items-center mb-8 space-x-5">
         <div className="relative">
-          <img src={profilePic} alt="avatar" className="object-cover w-24 h-24 border-4 border-white rounded-full shadow-md" />
+          <img src={profilePic} alt="avatar" className="object-cover w-28 h-28 border-4 border-white rounded-full shadow-md" />
           <label className="absolute bottom-0 right-0 p-2 bg-blue-500 rounded-full cursor-pointer hover:bg-blue-600">
             <FiCamera size={16} className="text-white" />
             <input type="file" name="picture" onChange={e => handleChange(e, setFormData)} className="hidden" />
@@ -132,12 +131,12 @@ export default function ProfilPage() {
         </div>
         <div>
           <h2 className="text-2xl font-bold">{user?.name} {user?.surname}</h2>
-          <div className="mt-1 text-sm">
-            <RoleBadge />
-          </div>
+          <div className="mt-1 text-sm"><RoleBadge /></div>
+          <p className="flex items-center text-gray-600 text-xs mt-1"><FiCalendar className="mr-1" /> Membre depuis : {new Date(user?.created_at).toLocaleDateString()}</p>
         </div>
       </div>
 
+      {/* Formulaire profil */}
       <form onSubmit={handleUpdateProfile} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <input name="name" placeholder="Prénom" disabled={!isAdmin} value={formData.name} onChange={e => handleChange(e, setFormData)} className="input-style" />
@@ -150,8 +149,9 @@ export default function ProfilPage() {
         </button>
       </form>
 
-      <div className="flex justify-center my-10 text-2xl text-blue-700 animate-pulse ">• •  •  •  •  • •</div>
+      <div className="my-8 border-t border-gray-200"></div>
 
+      {/* Changement de mot de passe */}
       <form onSubmit={handleChangePassword} className="space-y-6">
         <h3 className="flex items-center text-xl font-semibold">
           <FiLock className="mr-2 text-blue-500" /> Modifier le mot de passe
@@ -172,7 +172,7 @@ export default function ProfilPage() {
           </div>
         ))}
         <button disabled={isSubmitting} className="btn-primary">
-          {isSubmitting ? 'Modification...' : <><FiLock className="mr-2" /> Modifier</>}
+          {isSubmitting ? 'Modification...' : <><FiKey className="mr-2" /> Modifier</>}
         </button>
       </form>
 
@@ -183,13 +183,7 @@ export default function ProfilPage() {
           border-radius: 0.5rem;
           border: 1px solid #d1d5db;
           background: white;
-          transition: all 0.2s ease-in-out;
           outline: none;
-        }
-        .dark .input-style {
-          background: #1f2937;
-          color: white;
-          border-color: #374151;
         }
         .input-style:focus {
           border-color: #3b82f6;

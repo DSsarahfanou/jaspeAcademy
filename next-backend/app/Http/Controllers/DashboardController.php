@@ -46,8 +46,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\FormationStudent;
 use App\Models\Meeting;
-use App\Models\Formations;
+use App\Models\User;
 use App\Models\Formation;
+use App\Models\Equipment;
+use App\Models\Order;
 
 class DashboardController extends Controller
 {
@@ -150,6 +152,52 @@ class DashboardController extends Controller
             ],
         ]);
     }
+
+        //Administrateur
+    // public function adminDashboard(Request $request)
+    // {
+    //     $admin = $request->user();
+
+    //     // 1. Récupérer utilisateurs + compter
+    //     $users = User::get();
+
+    //     $usersCount = $users->count();
+    //     // 1. Récupérer orders + compter
+    //     $orders = Order::get();
+
+    //     $ordersCount = $orders->count();
+
+    //     // 1. Récupérer utilisateurs + compter
+    //     $equipments = Equipment::get();
+
+    //     $equipmentsCount = $equipments->count();
+
+
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'data' => [
+    //             'equipmentsCount' => $equipmentsCount,
+    //             'formationsCount' => $formationsCount,
+    //             'UsersCount' => $usersCount,
+    //             'OrdersCount' => $OrdersCount,
+
+    //         ],
+    //     ]);
+    // }
+
+    public function adminDashboard()
+    {
+        return response()->json([
+            'orders_count' => Order::count(),
+            'users_count' => User::count(),
+            'students_count' => User::where('role', 'student')->count(),
+            'teachers_count' => User::where('role', 'teacher')->count(),
+            'equipments_count' => Equipment::count(),
+            'recent_orders' => Order::latest()->take(5)->with('student')->get(),
+        ]);
+    }
+
 }
 
 

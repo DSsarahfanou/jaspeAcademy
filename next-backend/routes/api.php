@@ -278,6 +278,7 @@
     Route::middleware(['auth:sanctum'])->get('/teacher/apprenants/{id}', [TeacherFormationController::class, 'teacherStudentDetail']);
     Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/teacher/dashboard', [DashboardController::class, 'teacherDashboard']);
+    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard']);
 });
 
 

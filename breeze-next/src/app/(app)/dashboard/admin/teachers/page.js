@@ -160,20 +160,13 @@ export default function TeacherList() {
     )
   )
 
-  // Fetch unassigned teachers
-  const { data: unassignedData } = useSWR('/api/teachers/unassigned', () =>
-    axios.get('http://127.0.0.1:8000/api/teachers/unassigned').then(res => 
-      res.data.data?.data || res.data.data || res.data
-    )
-  )
+
 
   // Extract the actual array of teachers from the response
   const allTeachers = Array.isArray(teachersResponse) ? teachersResponse : []
-  const unassignedTeachers = Array.isArray(unassignedData) ? unassignedData : []
 
-  const isUnassigned = (teacherId) => {
-    return unassignedTeachers.some(t => t.id === teacherId)
-  }
+  const isUnassigned = (teacher) => teacher.formations_count === 0
+
 
   if (error) return <div className="p-6 text-red-500">Erreur de chargement des données</div>
   if (isLoading) return <div className="p-6">      
@@ -182,9 +175,10 @@ export default function TeacherList() {
     </div>
   if (!allTeachers.length) return <div className="p-6">Aucun enseignant trouvé</div>
 
+
   const filteredTeachers = allTeachers.filter(teacher => {
-    if (filter === 'assigned') return !isUnassigned(teacher.id || teacher.teacher_id)
-    if (filter === 'unassigned') return isUnassigned(teacher.id || teacher.teacher_id)
+    if (filter === 'assigned') return teacher.formations_count > 0
+    if (filter === 'unassigned') return teacher.formations_count === 0
     return true
   })
 
@@ -251,7 +245,7 @@ export default function TeacherList() {
                 </div>
               </div>
 
-              {isUnassigned(teacherId) ? (
+              {isUnassigned(teacher) ? (
                 <span className="inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full mb-2">
                   Non assigné
                 </span>

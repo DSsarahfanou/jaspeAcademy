@@ -31,7 +31,7 @@ export default function EquipmentDetailsClient({ params }) {
 
   // If equipment is null or invalid, don't render the component
   if (!equipment || !equipment.id) {
-    return "c'est null"; // Server-side error handling in EquipmentPage will take over
+    return "Aucun"; // Server-side error handling in EquipmentPage will take over
   }
 
   const openEditModal = () => {
