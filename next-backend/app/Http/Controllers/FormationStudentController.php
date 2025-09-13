@@ -225,7 +225,7 @@ class FormationStudentController extends Controller
     // }
 
     public function formationsByStudent($student_id)
-    {
+    {   
         $student = User::where('id', $student_id)
                     ->where('role', 'student')
                     ->firstOrFail();
@@ -240,7 +240,8 @@ class FormationStudentController extends Controller
                 $formation->pivot_data = [
                     'progression' => $formationStudent->progression,
                     'completed_lessons' => $formationStudent->completed_lessons,
-                    'attestation' => $formationStudent->attestation
+                    'attestation' => $formationStudent->attestation,
+                    'request_internership' => $formationStudent->request_internership            
                 ];
                 return $formation;
             })
@@ -423,7 +424,7 @@ class FormationStudentController extends Controller
                 'student_email' => $request->student->email,
                 'formation_name' => $request->formation->name,
                 'request_status' => $request->request_status,
-                'request_internership' => $request->request_internership,
+                'request_internship' => $request->request_internership,
                 'created_at' => $request->created_at,
             ];
         });
@@ -435,27 +436,48 @@ class FormationStudentController extends Controller
     }
 
     // 8. Télécharger le PDF d'une demande (admin)
+    // public function downloadInternshipRequest($id)
+    // {
+    //     $formationStudent = FormationStudent::findOrFail($id);
+
+    //     if (!$formationStudent->request_internership) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Aucune demande de stage trouvée'
+    //         ], 404);
+    //     }
+
+    //     $filePath = storage_path('app/public/'. $formationStudent->request_internership);
+    //     if (!file_exists($filePath)) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Fichier PDF introuvable'
+    //         ], 404);
+    //     }
+
+    //     return response()->file($filePath, [
+    //         'Content-Type' => 'application/pdf',
+    //         'Content-Disposition' => 'inline; filename="demande_stage_' . $id . '.pdf"'
+    //     ]);
+
+    // }
+
     public function downloadInternshipRequest($id)
     {
-        $formationStudent = FormationStudent::findOrFail($id);
+        $request = InternshipRequest::findOrFail($id);
 
-        if (!$formationStudent->request_internership) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Aucune demande de stage trouvée'
-            ], 404);
-        }
+        $filePath = storage_path('app/public/' . $request->file_path);
 
-        $filePath = storage_path('app/public/'. $formationStudent->request_internership);
         if (!file_exists($filePath)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Fichier PDF introuvable'
-            ], 404);
+            return response()->json(['message' => 'Fichier introuvable'], 404);
         }
 
-        return response()->download($filePath, 'demande_stage_' . $id . '.pdf');
+        return response()->download($filePath);
     }
+
+
+
+
 
     // 9. Approuver ou rejeter une demande (admin)
     public function updateInternshipRequest(Request $request, $id)

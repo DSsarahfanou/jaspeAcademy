@@ -11,8 +11,8 @@ const axios = Axios.create({
 
     withCredentials: true,
     withXSRFToken: true,
-    maxContentLength: 1000 * 1024 * 1024, // 100MB
-    maxBodyLength: 1000 * 1024 * 1024 // 100MB
+    maxContentLength: 10000 * 1024 * 1024, // 100MB
+    maxBodyLength: 10000 * 1024 * 1024 // 100MB
 })
 
 export default axios

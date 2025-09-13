@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import axios from '/src/lib/axios'
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
@@ -36,23 +38,18 @@ export default function AdminOrdersPage() {
     activeTab === 'livrees' ? order.order_status === 1 : order.order_status !== 1
   )
 
+
   const handleValidate = async (orderId) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_status: 1 })
-      })
-      const data = await res.json()
-      if (data.status === 'success') {
-        setOrders(prev =>
-          prev.map(o => o.id === orderId ? { ...o, order_status: 1 } : o)
-        )
-      }
-    } catch (err) {
-      console.error(err)
+      console.log(orderId)
+      const order_status = true;
+      await axios.patch(`http://localhost:8000/api/orders/${orderId}`, {order_status});
+      toast.success('commande déjà livrée.');
+    } catch (error) {
+      toast.error(error.message);
     }
-  }
+  };
+
 
   if (loading) return (
     <div className="p-6 text-center">
@@ -63,6 +60,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      <ToastContainer />
       <h1 className="text-2xl font-bold mb-6">Gestion des commandes</h1>
 
       {/* Onglets */}

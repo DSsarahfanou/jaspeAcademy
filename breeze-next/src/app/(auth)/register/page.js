@@ -12,6 +12,7 @@ import Modal from '/src/components/Modal'
 import { useRouter } from 'next/navigation'
 import AuthCard from '/src/app/(auth)/AuthCard'
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { PathnameContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime'
 
 
 const africanCountries = [
@@ -138,20 +139,29 @@ export default function Register() {
         // }
 
 
-          try {
-    const response = await register({ 
-      data: formDataToSend,
-      setErrors: (errs) => setErrors(errs)
-    });
-    
-    // Stockez le token dans localStorage
-    localStorage.setItem('token', response.token);
-    
-    // Redirigez vers la page de vérification
-    router.push('/verify-email');
-  } catch (error) {
-    console.error('Registration error:', error);
-  }
+        try {
+            // const response = await register({ 
+            // data: formDataToSend,
+            // setErrors: (errs) => setErrors(errs)
+            // });
+            // console.log('avant le localstorage')
+            // // Stockez le token dans localStorage
+            // localStorage.setItem('token', response.token);
+
+            // console.log('apres le localstorage')
+            
+            // Redirigez vers la page de vérification
+            const formDataObj = Object.fromEntries(formDataToSend.entries());
+            console.log(formDataObj);
+            console.log('avant le localstorage');
+            localStorage.setItem("formData", JSON.stringify(formDataObj));
+            router.push("/verifyEmail");
+        } catch (error) {
+            console.error('Registration error:', error);
+        }
+
+
+        
     }
 
 

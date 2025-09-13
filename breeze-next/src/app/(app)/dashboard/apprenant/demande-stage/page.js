@@ -45,13 +45,16 @@ export default function StudentInternshipRequests() {
             'Accept': 'application/json',
           },
         });
+        console.log(formationsResponse);
+        console.log(formationsResponse.data.completed_formations);
         // Filtrer les formations terminées sans demande de stage
-        const eligibleFormations = formationsResponse.data.formations.filter(f => 
-          f.pivot.progression === 100 && !f.pivot.request_internership
+        const eligibleFormations = formationsResponse.data.completed_formations.filter(f => 
+          f.pivot_data.progression === 100 && !f.pivot_data.request_internership
         );
         setFormations(eligibleFormations);
       } catch (error) {
         toast.error(error.response?.data?.message || 'Erreur lors de la récupération des données');
+        console.log(error);
       } finally {
         setLoading(false);
       }
@@ -118,7 +121,7 @@ export default function StudentInternshipRequests() {
               <div key={formation.id} className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
                 <span>{formation.name}</span>
                 <Link
-                  href={`/demande-stage?formation_id=${formation.id}`}
+                  href={`/dashboard/apprenant/mes-formations/${formation.id}/demande-stage`}
                   className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
                 >
                   <FaPlus className="mr-2" />

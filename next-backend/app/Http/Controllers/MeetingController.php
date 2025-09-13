@@ -205,14 +205,24 @@ public function studentMeetings(Request $request)
     $pastMeetings = collect();
 
     foreach ($formationProgressions as $fs) {
+
         // Meetings disponibles (non complétés)
+        // Meetings disponibles
         $available = Meeting::where('formation_id', $fs->formation_id)
             ->where('progression_level', '<=', $fs->progression)
             ->whereDoesntHave('students', function ($q) use ($student) {
                 $q->where('student_id', $student->id);
             })
             ->with(['formation', 'teacher'])
-            ->get();
+            ->get()
+            ->filter(function ($meeting) use ($student) {
+                // Vérifier qu'il n'a pas déjà rejoint un meeting de ce même niveau
+                return !$student->meetings()
+                    ->where('meetings.formation_id', $meeting->formation_id)
+                    ->wherePivot('level', $meeting->progression_level)
+                    ->exists();
+            });
+
 
         // Meetings déjà complétés
         $completed = Meeting::where('formation_id', $fs->formation_id)

@@ -90,7 +90,7 @@ export default function StudentMeetings() {
   const [loading, setLoading] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [activeTab, setActiveTab] = useState('available'); // 'available' ou 'completed'
-
+  const [selectedFormation, setSelectedFormation] = useState("all");
   const handleJoin = async (meetingId, roomLink) => {
     try {
       await axios.post(`/api/meetings/${meetingId}/attendance`);
@@ -121,9 +121,45 @@ export default function StudentMeetings() {
     return <JoinRoom roomName={selectedRoom} />;
   }
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Mes Réunions</h1>
+
+
+
+const formations = [
+  ...new Set([
+    ...meetings.available.map(m => m.formation.name),
+    ...meetings.completed.map(m => m.formation.name),
+  ])
+];
+
+const filteredAvailable = selectedFormation === "all"
+  ? meetings.available
+  : meetings.available.filter(m => m.formation.name === selectedFormation);
+
+const filteredCompleted = selectedFormation === "all"
+  ? meetings.completed
+  : meetings.completed.filter(m => m.formation.name === selectedFormation);
+
+return (
+  <div className="max-w-4xl mx-auto p-6">
+    <h1 className="text-2xl font-bold mb-6">Mes Réunions</h1>
+
+    {/* Filtre formations */}
+    <div className="mb-6 flex items-center gap-4">
+      <label className="font-medium text-gray-700">Filtrer par formation :</label>
+      <select
+        value={selectedFormation}
+        onChange={e => setSelectedFormation(e.target.value)}
+        className="border rounded-lg px-3 py-2"
+      >
+        <option value="all">Toutes</option>
+        {formations.map((formation, index) => (
+          <option key={index} value={formation}>{formation}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* … reste de ton code (onglets etc.) */}
+
 
       {/* Onglets */}
       <div className="flex border-b  mb-6">
@@ -148,13 +184,8 @@ export default function StudentMeetings() {
             <p className="text-gray-600">Aucune réunion disponible pour votre progression.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {meetings.available.map(meeting => (
-                <MeetingCard 
-                  key={meeting.id} 
-                  meeting={meeting} 
-                  onJoin={handleJoin}
-                  isCompleted={false}
-                />
+              {filteredAvailable.map(meeting => (
+                <MeetingCard key={meeting.id} meeting={meeting} onJoin={handleJoin} isCompleted={false} />
               ))}
             </div>
           )}
@@ -167,13 +198,8 @@ export default function StudentMeetings() {
             <p className="text-gray-600">Vous n'avez pas encore participé à des réunions.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {meetings.completed.map(meeting => (
-                <MeetingCard 
-                  key={meeting.id} 
-                  meeting={meeting} 
-                  onJoin={handleJoin}
-                  isCompleted={true}
-                />
+              {filteredCompleted.map(meeting => (
+                <MeetingCard key={meeting.id} meeting={meeting} onJoin={handleJoin} isCompleted={true} />
               ))}
             </div>
           )}

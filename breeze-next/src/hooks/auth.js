@@ -223,20 +223,20 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 //   })
 // );
 
-    // const getRedirectPath = (role) => {
-    //     const paths = {
-    //         admin: '/dashboard/admin',
-    //         teacher: '/dashboard/animateur',
-    //         student: '/dashboard/apprenant',
-    //     };
-    //     return paths[role] || '/dashboard/apprenant';
-    // };
+    const getRedirectPath = (role) => {
+         const paths = {
+             admin: '/dashboard/admin',
+             teacher: '/dashboard/animateur',
+             student: '/dashboard/apprenant',
+         };
+         return paths[role] || '/dashboard/apprenant';
+     };
 
     const login = async ({ setErrors, setStatus, ...props }) => {
         try {
             await axios.get('/sanctum/csrf-cookie'); // Obligatoire AVANT login
 
-            const loginResponse = await axios.post('/login', props); // Pas besoin de withCredentials ici
+            const loginResponse = await axios.post('/login', props); 
 
             await mutate(); // recharge les infos de l'utilisateur
             return loginResponse.data.user;
@@ -254,19 +254,32 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         setErrors([]);
 
         try {
-            await axios.post('/register', data, {
+            // await axios.post('/register', data, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            //     withCredentials: true,
+            // });
+
+            console.log("Avant le post dans register");
+            const registerResponse = await axios.post('/register', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
                 withCredentials: true,
             });
+            console.log("Après le post dans register")
 
             await mutate();
 
+            console.log("Avant la récuppérartion dans user dans register")
             // Récupérer l'utilisateur pour connaître son rôle
             const userResponse = await axios.get('/api/user');
             const role = userResponse.data.role || 'student';
+            console.log(userResponse.data.role); 
             router.push(getRedirectPath(role));
+            // ← ici tu retournes le token
+            return registerResponse.data.token;
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);

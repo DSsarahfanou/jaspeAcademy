@@ -18,7 +18,8 @@ return [
     
     'paths' => [
         'api/*',
-        'login',        
+        'login',
+        'register',        
         'logout',       
         'sanctum/csrf-cookie',
         'user',

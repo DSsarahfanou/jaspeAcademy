@@ -30,18 +30,16 @@ export default function Footer() {
           <h3 className="mb-4 text-lg font-semibold">Contact</h3>
           <ul className="space-y-2 text-sm text-gray-400">
             <li><a href="/categorie/poterie" className="hover:text-white">Bénin, Calavi , Bidossèssi</a></li>
-            <li><a href="/categorie/tissage" className="hover:text-white">(+229)  01 99  00 18 03</a></li>
-            <li><a href="/categorie/perles" className="hover:text-white">jaspe@gmail.com</a></li>
+            <li><a href="/categorie/tissage" className="hover:text-white">(+229)  01 47 33 28 80 / 01 21 33 30 08</a></li>
+            <li><a href="/categorie/perles" className="hover:text-white">contact@jaspetechnologie.bj</a></li>
           </ul>
         </div>
 
         {/* Réseaux sociaux */}
         <div>
           <h3 className="mb-4 text-lg font-semibold">Suivez-nous</h3>
-          <div className="flex space-x-4 text-xl text-gray-400">
-            <a href="#" className="hover:text-white"><FaFacebookF /></a>
-            <a href="#" className="hover:text-white"><FaInstagram /></a>
-            <a href="#" className="hover:text-white"><FaTwitter /></a>
+          <div className="flex space-x-4 text-xl text-gray-400 text-center">
+            <a href="https://www.facebook.com/jaspetechnologies/" className="hover:text-white"><FaFacebookF /></a>
           </div>
         </div>
       </div>

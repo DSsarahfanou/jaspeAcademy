@@ -17,8 +17,18 @@ import { useRouter } from 'next/navigation'
 const Navigation = ({ user }) => {
     const { logout } = useAuth()
     const [open, setOpen] = useState(false)
+    const [profile, setProfile] = useState()
     const pathname = usePathname()
     const router = useRouter()
+    // if (user.role === "student"){
+    //     setProfile("apprenant");   
+    // }
+    // else if (user.role === "teacher"){
+    //     setProfile("animateur");   
+    // }
+    // else {
+    //     setProfile("admin");   
+    // }
 
     return (
         <nav className="bg-white border-b border-gray-100 ">
@@ -54,7 +64,7 @@ const Navigation = ({ user }) => {
                                     </svg>
                                 </button>
                             }>
-                            <DropdownButton onClick={() => router.push('/dashboard/profile')}>
+                            <DropdownButton onClick={() => router.push(`/dashboard/${user.role}/profile`)}>
                                 Profile
                             </DropdownButton>
 
@@ -96,7 +106,7 @@ const Navigation = ({ user }) => {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavButton  onClick={() => router.push('/dashboard/profile')} > 
+                            <ResponsiveNavButton  onClick={() => router.push(`/dashboard/${profile}/profile`)} > 
                                 Profile
                             </ResponsiveNavButton>
                             <ResponsiveNavButton onClick={logout}>

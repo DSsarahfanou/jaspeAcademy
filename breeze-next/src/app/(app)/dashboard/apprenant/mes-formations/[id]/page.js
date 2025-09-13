@@ -407,6 +407,34 @@ export default function FormationDetail() {
   const [modulesTerminés, setModulesTerminés] = useState([]);
   const [progression, setProgression] = useState(0);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [showInfos, setShowInfos] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
+  const [niveauAtteint, setNiveauAtteint] = useState(null);
+  useEffect(() => {
+    if ([25, 50, 75].includes(progression) && niveauAtteint !== progression) {
+      setShowPopup(true);
+      setNiveauAtteint(progression);
+    }
+  }, [progression]);
+
+  const [completedMeetings, setCompletedMeetings] = useState([]);
+
+  useEffect(() => {
+  const fetchMeetings = async () => {
+    try {
+      const res = await axios.get("/api/student/meetings", {
+        withCredentials: true,
+      });
+      setCompletedMeetings(res.data.completed || []);
+    } catch (err) {
+      console.error("Erreur chargement meetings:", err);
+    }
+  };
+
+  fetchMeetings();
+}, []);
+
+
   /**
    * Vérifie si TOUTES les leçons d’un module sont terminées
    */
@@ -682,11 +710,26 @@ const allerAuQuiz = () => {
       return;
     }
   }
+  const requiredLevels = [25, 50, 75];
 
+  // Vérifie si pour chaque palier atteint, il y a un meeting complété
+  const missingMeetings = requiredLevels.filter(level =>
+    progression >= level &&
+    !completedMeetings.some(m => m.progression_level === level)
+  );
+
+  if (missingMeetings.length > 0) {
+    // Afficher un popup bloquant
+    setShowPopup(true);
+    setNiveauAtteint("meetings_obligatoires");
+    return;
+  }
   //  On peut accéder au quiz
   toast.success("Tous les modules sont terminés ! 🚀");
   router.push(`/dashboard/apprenant/mes-formations/${formation.id}/quiz`);
 };
+
+
 
 
 return (
@@ -737,32 +780,66 @@ return (
           style={{ width: `${progression}%` }}
         ></div>
       </div>
-      <p className="text-sm text-gray-600">Progression : {progression}%</p>
+      <div className="w-full flex justify-between items-center">
+        <p className="text-sm text-gray-600">
+          Progression : {progression}%
+        </p>
 
-      <img 
-        src={`http://127.0.0.1:8000/storage/${formation.picture}`} 
-        alt="Image formation" 
-        className="object-cover w-full h-64 shadow-md rounded-xl" 
-      />
-
-      <div className="space-y-2 text-gray-800">
-        <p><strong>Prérequis :</strong> {formation.prerequisites}</p>
-        <p><strong>Description :</strong> {formation.formation_details}</p>
+        {/* Bouton toggle */}
+        <button
+          onClick={() => setShowInfos(!showInfos)}
+          className="px-3 py-1.5 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
+        >
+          {showInfos ? "Cacher les détails ⏷" : "Voir les détails ⏵"}
+        </button>
       </div>
+
+
+
+      {/* Bloc image + description conditionnel */}
+      {showInfos && (
+        <div className="space-y-4">
+          <img
+            src={`http://127.0.0.1:8000/storage/${formation.picture}`}
+            alt="Image formation"
+            className="object-cover w-full h-64 shadow-md rounded-xl"
+          />
+
+          <div className="space-y-2 text-gray-800">
+            <p><strong>Prérequis :</strong> {formation.prerequisites}</p>
+            <p><strong>Description :</strong> {formation.formation_details}</p>
+          </div>
+        </div>
+      )}
+
 
       <div className="pt-6 space-y-4 border-t">
         <h2 className="text-2xl font-semibold text-blue-700">{moduleActuel.title}</h2>
         <h3 className="text-lg font-medium text-gray-700">{leconActuelle.title}</h3>
+        {/* === Contenu média de la leçon === */}
+        {leconActuelle.contents && leconActuelle.contents.endsWith(".mp4") ? (
+          <video
+            controls
+            controlsList="nodownload"
+            className="w-full rounded-lg max-h-64"
+          >
+            <source
+              src={`http://127.0.0.1:8000/storage/${leconActuelle.contents}`}
+              type="video/mp4"
+            />
+            Votre navigateur ne supporte pas la lecture vidéo.
+          </video>
+        ) : leconActuelle.contents && leconActuelle.contents.endsWith(".pdf") ? (
+          <iframe
+            src={`http://127.0.0.1:8000/storage/${leconActuelle.contents}`}
+            className="w-full h-[500px] rounded-lg border"
+          >
+            Ce navigateur ne supporte pas l'affichage PDF.
+          </iframe>
+        ) : (
+          <p className="text-gray-500">Aucun contenu média disponible pour cette leçon.</p>
+        )}
 
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <h4 className="font-medium mb-2">Contenu de la leçon :</h4>
-          <p>{leconActuelle.contents}</p>
-        </div>
-
-        <video controls controlsList="nodownload" className="w-full rounded-lg max-h-64">
-          <source src={`http://127.0.0.1:8000/${leconActuelle.video}`} type="video/mp4" />
-          Votre navigateur ne supporte pas la lecture vidéo.
-        </video>
 
         <div className="flex justify-between mt-6">
           <button
@@ -792,6 +869,55 @@ return (
         </div>
       </div>
     </main>
+    {showPopup && (
+      <motion.div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white rounded-xl shadow-lg p-6 w-96 text-center">
+          {niveauAtteint === "meetings_obligatoires" ? (
+            <>
+              <h2 className="text-xl font-bold text-red-600">
+                ⚠️ Meetings obligatoires non complétés
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Vous devez terminer les meetings des niveaux 25%, 50% et 75% avant de passer le quiz.
+              </p>
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => router.push("/dashboard/apprenant/meet")}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Voir mes meetings
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-bold text-blue-700">
+                Bravo 🎉 Vous avez atteint {progression}% !
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Vous êtes invité(e) à effectuer le meeting de ce niveau.
+              </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <button
+                  onClick={() => router.push("/dashboard/apprenant/meet")}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Voir les meetings
+                </button>
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                >
+                  Continuer
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    )}
+
+  
   </div>
 );
 }

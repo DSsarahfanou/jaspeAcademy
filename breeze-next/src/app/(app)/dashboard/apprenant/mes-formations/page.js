@@ -164,7 +164,7 @@ export default function MesFormationsPage() {
 
   if (loading || !user) {
     return (
-      <div className="p-6 text-center">
+      <div className="h-screen flex flex-col items-center justify-center text-gray-600">
         <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4 mx-auto" />
         <p>Chargement...</p> 
       </div>

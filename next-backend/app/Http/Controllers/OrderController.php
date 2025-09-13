@@ -90,30 +90,12 @@ class OrderController extends Controller
 
 
 
-    public function update(Request $request, string $id)
+    public function update($id)
     {
+        \Log::debug('Bypass update', ['id' => $id]);
         $order = Order::find($id);
-
-        if (!$order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Commande non trouvée'
-            ], 404);
-        }
-
-        $validated = $request->validate([
-            'sum' => 'sometimes|numeric',
-            'path_facture' => 'sometimes|string',
-            'order_status' => 'sometimes|string|in:pending,paid,cancelled'
-        ]);
-
-        $order->update($validated);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Commande mise à jour avec succès',
-            'data' => $order
-        ]);
+        $order->update(['order_status' => true]);
+        return response()->json(['status' => 'success']);
     }
 
     public function destroy(string $id)

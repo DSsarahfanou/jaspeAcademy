@@ -147,10 +147,12 @@ export default function QuizPage({ params }) {
 
 
 
-  if (loading) return <div>      
-    <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen">
+       <img src="/loading.gif" alt="Chargement..." className="w-32 h-32 mb-4" />
       <p>Chargement...</p> 
-    </div>;
+    </div>
+  );
   if (error) return <div>Erreur : {error}</div>;
 
   if (progression === 100 && score !== null) {

@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import axios from '@/lib/axios'
+import axios from '/src/lib/axios'
 import { useState } from 'react'
 
 export default function UnassignedFormations() {

@@ -253,7 +253,7 @@ class TeacherFormationController extends Controller
     public function unassignedTeachers()
     {
         $teachers = User::where('role', 'teacher')
-            ->whereDoesntHave('formations')
+            ->whereDoesntHave('teacherFormations')
             ->get();
 
         return response()->json([

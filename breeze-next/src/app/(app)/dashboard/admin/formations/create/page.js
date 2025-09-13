@@ -1,749 +1,709 @@
-"use client"
-import { useState, useEffect } from 'react';
-import axios from '/src/lib/axios';
-import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-export default function CreateFormation() {
-    const router = useRouter();
-    const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
-    const [existingEquipments, setExistingEquipments] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+"use client";
 
-    // Données de la formation
-    const [formation, setFormation] = useState({
-        name: '',
-        prerequisites: '',
-        price: '',
-        formation_details: '',
-        picture: null,
-        categorie: '',
-        modules: [],
-        equipments: []
+import React, { useState, useEffect } from "react";
+import axios from "/src/lib/axios"; // ton axios configuré
+import { motion, AnimatePresence } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaPlus, FaTrash } from "react-icons/fa";
+
+const steps = ["Détails de la Formation", "Modules et Leçons", "Équipements", "Quizzes"];
+
+const FormationCreatePage = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [teachers, setTeachers] = useState([]);
+  const [equipments, setEquipments] = useState([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    prerequisites: "",
+    price: 0,
+    formation_details: "",
+    picture: null,
+    teacher_id: "",
+    modules: [{ title: "", description: "", lessons: [{ title: "", contents: null }] }],
+    equipment_ids: [], // pour associer des équipements existants
+    equipments: [], // pour en créer de nouveaux
+    quizzes: [
+      {
+        title: "",
+        questions: [{ title: "", point: 1, options: [{ title: "", answer: false }] }],
+      },
+    ],
+  });
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const res = await axios.get("/api/teachers");
+        console.log(res.data.data.data);
+        setTeachers(res.data.data.data); // Laravel retourne {data: [...]}
+      } catch {
+        toast.error("Erreur lors du chargement des formateurs");
+      }
+    };
+    const fetchEquipments = async () => {
+      try {
+        const res = await axios.get("/api/equipments");
+        setEquipments(res.data.data);
+      } catch {
+        toast.error("Erreur lors du chargement des équipements");
+      }
+    };
+    fetchTeachers();
+    fetchEquipments();
+  }, []);
+
+  const handleInputChange = (e, path = []) => {
+    const { name, value, type, files, checked } = e.target;
+    setFormData((prev) => {
+      if (path.length === 0) {
+        return { ...prev, [name]: type === "file" ? files[0] : type === "checkbox" ? checked : value };
+      }
+      const updated = structuredClone(prev);
+      let current = updated;
+      for (let i = 0; i < path.length - 1; i++) current = current[path[i]];
+      current[path[path.length - 1]] =
+        type === "file" ? files[0] : type === "checkbox" ? checked : value;
+      return updated;
     });
+  };
 
-    // Module par défaut
-    const defaultModule = {
-        title: '',
-        description: '',
-        lessons: [{
-            title: '',
-            content_file: null,
-            video_file: null
-        }]
-    };
+  const handleArrayAdd = (path, defaultItem) => {
+    setFormData((prev) => {
+      const updated = structuredClone(prev);
+      let current = updated;
+      for (let i = 0; i < path.length - 1; i++) current = current[path[i]];
+      current[path[path.length - 1]].push(defaultItem);
+      return updated;
+    });
+  };
 
-    // Équipement par défaut
-    const defaultEquipment = {
-        id: null,
-        name: '',
-        quantity: '',
-        price: '',
-        status: true,
-        description: '',
-        details: '',
-        picture: null,
-        isNew: true
-    };
+  const handleArrayRemove = (path, index) => {
+    setFormData((prev) => {
+      const updated = structuredClone(prev);
+      let current = updated;
+      for (let i = 0; i < path.length - 1; i++) current = current[path[i]];
+      current[path[path.length - 1]].splice(index, 1);
+      return updated;
+    });
+  };
 
-    // Charger les équipements existants
-    useEffect(() => {
-        const fetchEquipments = async () => {
-            try {
-                const response = await axios.get('/api/equipments');
-                setExistingEquipments(response.data.data || []);
-            } catch (error) {
-                console.error('Error fetching equipments:', error);
-                toast.error('Erreur lors du chargement des équipements');
-            }
-        };
-        fetchEquipments();
-    }, []);
-
-   
-    // Gestion des changements de la formation
-    const handleFormationChange = (e) => {
-        const { name, value } = e.target;
-        setFormation(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    // Gestion de l'upload de l'image de la formation
-    const handleFormationImageUpload = (e) => {
-        setFormation(prev => ({
-            ...prev,
-            picture: e.target.files[0]
-        }));
-    };
-
-    // Gestion des changements des modules
-    const handleModuleChange = (index, e) => {
-        const { name, value } = e.target;
-        const updatedModules = [...formation.modules];
-        updatedModules[index][name] = value;
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
-
-    // Gestion des changements des leçons
-    const handleLessonChange = (moduleIndex, lessonIndex, e) => {
-        const { name, value } = e.target;
-        const updatedModules = [...formation.modules];
-        updatedModules[moduleIndex].lessons[lessonIndex][name] = value;
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
-
-    // Gestion de l'upload de fichier PDF pour une leçon
-    const handleLessonPdfUpload = (moduleIndex, lessonIndex, e) => {
-        const updatedModules = [...formation.modules];
-        updatedModules[moduleIndex].lessons[lessonIndex].content_file = e.target.files[0];
-        updatedModules[moduleIndex].lessons[lessonIndex].video_file = null;
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
-
-    // Gestion de l'upload de fichier vidéo pour une leçon
-    const handleLessonVideoUpload = (moduleIndex, lessonIndex, e) => {
-        const updatedModules = [...formation.modules];
-        updatedModules[moduleIndex].lessons[lessonIndex].video_file = e.target.files[0];
-        updatedModules[moduleIndex].lessons[lessonIndex].content_file = null;
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
-
-    // Gestion des changements des équipements
-    const handleEquipmentChange = (index, e) => {
-        const { name, value, type, checked } = e.target;
-        const updatedEquipments = [...formation.equipments];
-        updatedEquipments[index][name] = type === 'checkbox' ? checked : value;
-        setFormation(prev => ({
-            ...prev,
-            equipments: updatedEquipments
-        }));
-    };
-
-    // Gestion de l'upload de l'image d'un équipement
-    const handleEquipmentImageUpload = (index, e) => {
-        const updatedEquipments = [...formation.equipments];
-        updatedEquipments[index].picture = e.target.files[0];
-        setFormation(prev => ({
-            ...prev,
-            equipments: updatedEquipments
-        }));
-    };
-
-    // Ajouter un module
-    const addModule = () => {
-        setFormation(prev => ({
-            ...prev,
-            modules: [...prev.modules, { ...defaultModule }]
-        }));
-    };
-
-    // Supprimer un module
-    const removeModule = (index) => {
-        const updatedModules = formation.modules.filter((_, i) => i !== index);
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
-
-    // Ajouter une leçon
-    const addLesson = (moduleIndex) => {
-        const updatedModules = [...formation.modules];
-        updatedModules[moduleIndex].lessons.push({
-            title: '',
-            content_file: null,
-            video_file: null
+  const validateStep = () => {
+    const newErrors = {};
+    if (activeStep === 0) {
+      if (!formData.name) newErrors.name = "Requis";
+      if (!formData.prerequisites) newErrors.prerequisites = "Requis";
+      if (!formData.price || formData.price < 0) newErrors.price = "Requis et >= 0";
+      if (!formData.formation_details) newErrors.formation_details = "Requis";
+      if (!formData.teacher_id) newErrors.teacher_id = "Requis";
+    } else if (activeStep === 1) {
+      formData.modules.forEach((module, mIndex) => {
+        if (!module.title) newErrors[`modules.${mIndex}.title`] = "Requis";
+        if (!module.description) newErrors[`modules.${mIndex}.description`] = "Requis";
+        module.lessons.forEach((lesson, lIndex) => {
+          if (!lesson.title) newErrors[`modules.${mIndex}.lessons.${lIndex}.title`] = "Requis";
         });
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
+      });
+    } else if (activeStep === 3) {
+      formData.quizzes.forEach((quiz, qIndex) => {
+        if (!quiz.title) newErrors[`quizzes.${qIndex}.title`] = "Requis";
+        quiz.questions.forEach((q, quIndex) => {
+          if (!q.title) newErrors[`quizzes.${qIndex}.questions.${quIndex}.title`] = "Requis";
+          q.options.forEach((opt, oIndex) => {
+            if (!opt.title)
+              newErrors[`quizzes.${qIndex}.questions.${quIndex}.options.${oIndex}.title`] = "Requis";
+          });
+        });
+      });
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    // Supprimer une leçon
-    const removeLesson = (moduleIndex, lessonIndex) => {
-        const updatedModules = [...formation.modules];
-        updatedModules[moduleIndex].lessons = updatedModules[moduleIndex].lessons.filter((_, i) => i !== lessonIndex);
-        setFormation(prev => ({
-            ...prev,
-            modules: updatedModules
-        }));
-    };
+  const handleNext = () => {
+    if (validateStep()) setActiveStep((prev) => prev + 1);
+    else toast.error("Veuillez remplir tous les champs requis");
+  };
 
-    // Ajouter un équipement
-    const addEquipment = () => {
-        setFormation(prev => ({
-            ...prev,
-            equipments: [...prev.equipments, { ...defaultEquipment }]
-        }));
-    };
+  const handleBack = () => setActiveStep((prev) => prev - 1);
 
-    // Sélectionner un équipement existant
-    const selectExistingEquipment = (equipment) => {
-        setFormation(prev => ({
-            ...prev,
-            equipments: [...prev.equipments, {
-                id: equipment.id,
-                name: equipment.name,
-                quantity: 1,
-                price: equipment.price,
-                status: equipment.status,
-                description: equipment.description,
-                details: equipment.details,
-                picture: equipment.picture,
-                isNew: false
-            }]
-        }));
-        setSearchTerm('');
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("➡️ Submit déclenché");
+    if (!validateStep()) {
+      toast.error("Veuillez remplir tous les champs requis");
+      return;
+    }
+    console.log("➡️ Submit déclenché");
+    const formDataToSend = new FormData();
+    console.log("➡️ Submit déclenché");
+    console.log(formDataToSend);
+    // Champs simples
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("prerequisites", formData.prerequisites);
+    formDataToSend.append("price", formData.price);
+    formDataToSend.append("formation_details", formData.formation_details);
+    formDataToSend.append("teacher_id", formData.teacher_id);
+    console.log(formDataToSend);
+    if (formData.picture) formDataToSend.append("picture", formData.picture);
+    console.log(formDataToSend);
 
-    // Supprimer un équipement
-    const removeEquipment = (index) => {
-        const updatedEquipments = formation.equipments.filter((_, i) => i !== index);
-        setFormation(prev => ({
-            ...prev,
-            equipments: updatedEquipments
-        }));
-    };
-
-    // Filtrer les équipements existants
-    const filteredEquipments = existingEquipments.filter(equipment =>
-        equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !formation.equipments.some(eq => eq.id === equipment.id)
+    // Equipements existants
+    formData.equipment_ids.forEach((id, i) =>
+      formDataToSend.append(`equipment_ids[${i}]`, id)
     );
+    console.log(formDataToSend);
 
-    // Soumission du formulaire
+    // Nouveaux équipements
+    formData.equipments.forEach((eq, i) => {
+      formDataToSend.append(`equipments[${i}][name]`, eq.name);
+      formDataToSend.append(`equipments[${i}][price]`, eq.price);
+      formDataToSend.append(`equipments[${i}][status]`, eq.status ? 1 : 0);
+      formDataToSend.append(`equipments[${i}][description]`, eq.description || "");
+      formDataToSend.append(`equipments[${i}][details]`, eq.details || "");
+      if (eq.picture) formDataToSend.append(`equipments[${i}][picture]`, eq.picture);
+    });
+    console.log(formDataToSend);
 
+    // Modules & leçons
+    formData.modules.forEach((mod, mi) => {
+      formDataToSend.append(`modules[${mi}][title]`, mod.title);
+      formDataToSend.append(`modules[${mi}][description]`, mod.description);
+      mod.lessons.forEach((les, li) => {
+        formDataToSend.append(`modules[${mi}][lessons][${li}][title]`, les.title);
+        if (les.contents)
+          formDataToSend.append(`modules[${mi}][lessons][${li}][contents]`, les.contents);
+      });
+    });
+    console.log(formDataToSend);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setErrors({});
+    // Quizzes
+    formData.quizzes.forEach((quiz, qi) => {
+      formDataToSend.append(`quizzes[${qi}][title]`, quiz.title);
+      quiz.questions.forEach((q, qj) => {
+        formDataToSend.append(`quizzes[${qi}][questions][${qj}][title]`, q.title);
+        formDataToSend.append(`quizzes[${qi}][questions][${qj}][point]`, q.point);
+        q.options.forEach((opt, ok) => {
+          formDataToSend.append(`quizzes[${qi}][questions][${qj}][options][${ok}][title]`, opt.title);
+          formDataToSend.append(
+            `quizzes[${qi}][questions][${qj}][options][${ok}][answer]`,
+            opt.answer ? 1 : 0
+          );
+        });
+      });
+    });
+    console.log(formDataToSend);
+    console.log(formData);
 
-        try {
-            // Récupérer le token CSRF
-            await axios.get('http://localhost:8000/sanctum/csrf-cookie');
+    try {
+      await axios.post("/api/formations", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Formation créée avec succès");
 
-            // Préparer FormData
-            const formData = new FormData();
+      // Reset state
+      setFormData({
+        name: "",
+        prerequisites: "",
+        price: 0,
+        formation_details: "",
+        picture: null,
+        teacher_id: "",
+        modules: [{ title: "", description: "", lessons: [{ title: "", contents: null }] }],
+        equipment_ids: [],
+        equipments: [],
+        quizzes: [
+          {
+            title: "",
+            questions: [{ title: "", point: 1, options: [{ title: "", answer: false }] }],
+          },
+        ],
+      });
+      setActiveStep(0);
+    } catch (error) {
+      if (error.response?.status === 422) {
+        setErrors(error.response.data.errors);
+        toast.error("Erreur de validation");
+      } else {
+        toast.error("Erreur lors de la création de la formation");
+      }
+    }
+  };
 
-            // Ajouter les champs simples
-            formData.append('name', formation.name);
-            formData.append('prerequisites', formation.prerequisites);
-            formData.append('price', formation.price);
-            formData.append('formation_details', formation.formation_details);
-            formData.append('categorie', formation.categorie || '');
-
-            // Ajouter l'image si elle existe
-            if (formation.picture) {
-                formData.append('picture', formation.picture);
-            }
-
-            // Ajouter les modules et leçons
-            formation.modules.forEach((module, moduleIndex) => {
-                formData.append(`modules[${moduleIndex}][title]`, module.title);
-                formData.append(`modules[${moduleIndex}][description]`, module.description);
-
-                module.lessons.forEach((lesson, lessonIndex) => {
-                    formData.append(`modules[${moduleIndex}][lessons][${lessonIndex}][title]`, lesson.title);
-                    
-                    if (lesson.content_file) {
-                        formData.append(`modules[${moduleIndex}][lessons][${lessonIndex}][content_file]`, lesson.content_file);
-                    }
-                    
-                    if (lesson.video_file) {
-                        formData.append(`modules[${moduleIndex}][lessons][${lessonIndex}][video_file]`, lesson.video_file);
-                    }
-                });
-            });
-
-            // Ajouter les équipements
-            formation.equipments.forEach((equipment, index) => {
-                if (equipment.id) {
-                    // Équipement existant
-                    formData.append(`equipments[${index}][id]`, equipment.id);
-                    formData.append(`equipments[${index}][quantity]`, equipment.quantity);
-                } else {
-                    // Nouvel équipement
-                    formData.append(`equipments[${index}][name]`, equipment.name);
-                    formData.append(`equipments[${index}][quantity]`, equipment.quantity);
-                    formData.append(`equipments[${index}][price]`, equipment.price);
-                    formData.append(`equipments[${index}][status]`, equipment.status ? '1' : '0');
-                    formData.append(`equipments[${index}][description]`, equipment.description || '');
-                    formData.append(`equipments[${index}][details]`, equipment.details || '');
-                    
-                    if (equipment.picture) {
-                        formData.append(`equipments[${index}][picture]`, equipment.picture);
-                    }
-                }
-            });
-
-            // Envoyer les données
-            const response = await axios.post('/api/formations', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json'
-                }
-            });
-
-            toast.success('Formation créée avec succès!');
-            setTimeout(() => {
-                router.push('/formations');
-            }, 2000);
-
-        } catch (error) {
-            if (error.response && error.response.status === 422) {
-                console.log('Validation errors:', error.response.data.errors);
-                setErrors(error.response.data.errors || {});
-                toast.error('Veuillez corriger les erreurs dans le formulaire');
-            } else {
-                console.error('Full error:', error);
-                toast.error('Une erreur est survenue: ' + (error.response?.data?.message || error.message));
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">Créer une nouvelle formation</h1>
-              <ToastContainer 
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
+  // --- renderStepContent reste inchangé sauf équipements existants (checkbox multiple au lieu de select unique) ---
+  const renderStepContent = (step) => {
+    switch (step) {
+      // === Étape 1 : Détails de la formation ===
+      case 0:
+        return (
+          <div>
+            <h2 className="text-xl font-bold mb-4">Détails de la Formation</h2>
+            <input
+              type="text"
+              name="name"
+              placeholder="Nom"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
             />
-            
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Section Formation */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-4">Informations de la formation</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Nom</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formation.name}
-                                onChange={handleFormationChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name[0]}</p>}
-                        </div>
+            {errors.name && <p className="text-red-500">{errors.name}</p>}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Prix</label>
-                            <input
-                                type="number"
-                                name="price"
-                                value={formation.price}
-                                onChange={handleFormationChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                            {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price[0]}</p>}
-                        </div>
+            <input
+              type="text"
+              name="prerequisites"
+              placeholder="Prérequis"
+              value={formData.prerequisites}
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
+            />
+            {errors.prerequisites && <p className="text-red-500">{errors.prerequisites}</p>}
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Image de la formation</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFormationImageUpload}
-                                className="mt-1 block w-full text-sm text-gray-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-md file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-indigo-50 file:text-indigo-700
-                                hover:file:bg-indigo-100"
-                            />
-                            {errors.picture && <p className="mt-1 text-sm text-red-600">{errors.picture[0]}</p>}
-                        </div>
+            <input
+              type="number"
+              name="price"
+              placeholder="Prix"
+              value={formData.price}
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
+            />
+            {errors.price && <p className="text-red-500">{errors.price}</p>}
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Prérequis</label>
-                            <textarea
-                                name="prerequisites"
-                                value={formation.prerequisites}
-                                onChange={handleFormationChange}
-                                rows={3}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                            {errors.prerequisites && <p className="mt-1 text-sm text-red-600">{errors.prerequisites[0]}</p>}
-                        </div>
+            <textarea
+              name="formation_details"
+              placeholder="Détails"
+              value={formData.formation_details}
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
+            />
+            {errors.formation_details && <p className="text-red-500">{errors.formation_details}</p>}
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Détails de la formation</label>
-                            <textarea
-                                name="formation_details"
-                                value={formation.formation_details}
-                                onChange={handleFormationChange}
-                                rows={5}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                            {errors.formation_details && <p className="mt-1 text-sm text-red-600">{errors.formation_details[0]}</p>}
-                        </div>
-                    </div>
-                </div>
+            <input
+              type="file"
+              name="picture"
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
+            />
 
-                {/* Section Modules */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Modules</h2>
-                        <button
-                            type="button"
-                            onClick={addModule}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Ajouter un module
-                        </button>
-                    </div>
+            <select
+              name="teacher_id"
+              value={formData.teacher_id}
+              onChange={handleInputChange}
+              className="border p-2 w-full mb-2"
+            >
+              <option value="">Sélectionner un formateur</option>
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            {errors.teacher_id && <p className="text-red-500">{errors.teacher_id}</p>}
+          </div>
+        );
 
-                    {formation.modules.length === 0 ? (
-                        <p className="text-gray-500">Aucun module ajouté</p>
-                    ) : (
-                        formation.modules.map((module, moduleIndex) => (
-                            <div key={moduleIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-lg font-medium">Module {moduleIndex + 1}</h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeModule(moduleIndex)}
-                                        className="text-red-600 hover:text-red-800"
-                                    >
-                                        Supprimer
-                                    </button>
-                                </div>
+      // === Étape 2 : Modules & Leçons ===
+      case 1:
+        return (
+          <div>
+            <h2 className="text-xl font-bold mb-4">Modules & Leçons</h2>
+            {formData.modules.map((mod, mi) => (
+              <div key={mi} className="border p-4 mb-4">
+                <input
+                  type="text"
+                  placeholder="Titre du module"
+                  value={mod.title}
+                  onChange={(e) => handleInputChange(e, ["modules", mi, "title"])}
+                  className="border p-2 w-full mb-2"
+                />
+                {errors[`modules.${mi}.title`] && (
+                  <p className="text-red-500">{errors[`modules.${mi}.title`]}</p>
+                )}
 
-                                <div className="grid grid-cols-1 gap-4 mb-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Titre</label>
-                                        <input
-                                            type="text"
-                                            name="title"
-                                            value={module.title}
-                                            onChange={(e) => handleModuleChange(moduleIndex, e)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        {errors[`modules.${moduleIndex}.title`] && (
-                                            <p className="mt-1 text-sm text-red-600">{errors[`modules.${moduleIndex}.title`][0]}</p>
-                                        )}
-                                    </div>
+                <textarea
+                  placeholder="Description du module"
+                  value={mod.description}
+                  onChange={(e) => handleInputChange(e, ["modules", mi, "description"])}
+                  className="border p-2 w-full mb-2"
+                />
+                {errors[`modules.${mi}.description`] && (
+                  <p className="text-red-500">{errors[`modules.${mi}.description`]}</p>
+                )}
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Description</label>
-                                        <textarea
-                                            name="description"
-                                            value={module.description}
-                                            onChange={(e) => handleModuleChange(moduleIndex, e)}
-                                            rows={3}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        {errors[`modules.${moduleIndex}.description`] && (
-                                            <p className="mt-1 text-sm text-red-600">{errors[`modules.${moduleIndex}.description`][0]}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Leçons du module */}
-                                <div className="ml-4">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h4 className="text-md font-medium">Leçons</h4>
-                                        <button
-                                            type="button"
-                                            onClick={() => addLesson(moduleIndex)}
-                                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                            Ajouter une leçon
-                                        </button>
-                                    </div>
-
-                                    {module.lessons.map((lesson, lessonIndex) => (
-                                        <div key={lessonIndex} className="mb-4 p-3 border border-gray-100 rounded-lg bg-gray-50">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <h5 className="text-sm font-medium">Leçon {lessonIndex + 1}</h5>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeLesson(moduleIndex, lessonIndex)}
-                                                    className="text-red-600 hover:text-red-800 text-xs"
-                                                >
-                                                    Supprimer
-                                                </button>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700">Titre</label>
-                                                    <input
-                                                        type="text"
-                                                        name="title"
-                                                        value={lesson.title}
-                                                        onChange={(e) => handleLessonChange(moduleIndex, lessonIndex, e)}
-                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    />
-                                                    {errors[`modules.${moduleIndex}.lessons.${lessonIndex}.title`] && (
-                                                        <p className="mt-1 text-sm text-red-600">{errors[`modules.${moduleIndex}.lessons.${lessonIndex}.title`][0]}</p>
-                                                    )}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700">Fichier PDF</label>
-                                                    <input
-                                                        type="file"
-                                                        accept=".pdf"
-                                                        onChange={(e) => handleLessonPdfUpload(moduleIndex, lessonIndex, e)}
-                                                        className="mt-1 block w-full text-sm text-gray-500
-                                                        file:mr-4 file:py-2 file:px-4
-                                                        file:rounded-md file:border-0
-                                                        file:text-sm file:font-semibold
-                                                        file:bg-indigo-50 file:text-indigo-700
-                                                        hover:file:bg-indigo-100"
-                                                    />
-                                                    {lesson.content_file && (
-                                                        <p className="mt-1 text-sm text-green-600">
-                                                            Fichier sélectionné: {lesson.content_file.name}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700">Fichier Vidéo</label>
-                                                    <input
-                                                        type="file"
-                                                        accept="video/*"
-                                                        onChange={(e) => handleLessonVideoUpload(moduleIndex, lessonIndex, e)}
-                                                        className="mt-1 block w-full text-sm text-gray-500
-                                                        file:mr-4 file:py-2 file:px-4
-                                                        file:rounded-md file:border-0
-                                                        file:text-sm file:font-semibold
-                                                        file:bg-indigo-50 file:text-indigo-700
-                                                        hover:file:bg-indigo-100"
-                                                    />
-                                                    {lesson.video_file && (
-                                                        <p className="mt-1 text-sm text-green-600">
-                                                            Fichier sélectionné: {lesson.video_file.name}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))
+                <h3 className="font-semibold">Leçons</h3>
+                {mod.lessons.map((lesson, li) => (
+                  <div key={li} className="pl-4 border-l mb-2">
+                    <input
+                      type="text"
+                      placeholder="Titre de la leçon"
+                      value={lesson.title}
+                      onChange={(e) => handleInputChange(e, ["modules", mi, "lessons", li, "title"])}
+                      className="border p-2 w-full mb-2"
+                    />
+                    {errors[`modules.${mi}.lessons.${li}.title`] && (
+                      <p className="text-red-500">{errors[`modules.${mi}.lessons.${li}.title`]}</p>
                     )}
-                </div>
 
-                {/* Section Équipements */}
-                <div className="bg-white shadow rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Équipements nécessaires</h2>
-                        <button
-                            type="button"
-                            onClick={addEquipment}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Ajouter un nouvel équipement
-                        </button>
-                    </div>
+                    <input
+                      type="file"
+                      onChange={(e) =>
+                        handleInputChange(e, ["modules", mi, "lessons", li, "contents"])
+                      }
+                      className="border p-2 w-full mb-2"
+                    />
 
-                    {/* Recherche d'équipements existants */}
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700">Rechercher un équipement existant</label>
-                        <div className="mt-1 relative">
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="Nom de l'équipement"
-                            />
-                            {searchTerm && filteredEquipments.length > 0 && (
-                                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1">
-                                    {filteredEquipments.map(equipment => (
-                                        <div
-                                            key={equipment.id}
-                                            className="px-4 py-2 hover:bg-indigo-50 cursor-pointer"
-                                            onClick={() => selectExistingEquipment(equipment)}
-                                        >
-                                            {equipment.name} - {equipment.price}€
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {formation.equipments.length === 0 ? (
-                        <p className="text-gray-500">Aucun équipement ajouté</p>
-                    ) : (
-                        formation.equipments.map((equipment, index) => (
-                            <div key={index} className="mb-6 p-4 border border-gray-200 rounded-lg">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-lg font-medium">
-                                        {equipment.isNew ? 'Nouvel équipement' : `Équipement existant: ${equipment.name}`}
-                                    </h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeEquipment(index)}
-                                        className="text-red-600 hover:text-red-800"
-                                    >
-                                        Supprimer
-                                    </button>
-                                </div>
-
-                                {equipment.isNew ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Nom</label>
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                value={equipment.name}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {errors[`equipments.${index}.name`] && (
-                                                <p className="mt-1 text-sm text-red-600">{errors[`equipments.${index}.name`][0]}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Quantité</label>
-                                            <input
-                                                type="number"
-                                                name="quantity"
-                                                value={equipment.quantity}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {errors[`equipments.${index}.quantity`] && (
-                                                <p className="mt-1 text-sm text-red-600">{errors[`equipments.${index}.quantity`][0]}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Prix</label>
-                                            <input
-                                                type="number"
-                                                name="price"
-                                                value={equipment.price}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {errors[`equipments.${index}.price`] && (
-                                                <p className="mt-1 text-sm text-red-600">{errors[`equipments.${index}.price`][0]}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                name="status"
-                                                checked={equipment.status}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                            />
-                                            <label className="ml-2 block text-sm text-gray-700">Disponible</label>
-                                        </div>
-
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700">Image de l'équipement</label>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleEquipmentImageUpload(index, e)}
-                                                className="mt-1 block w-full text-sm text-gray-500
-                                                file:mr-4 file:py-2 file:px-4
-                                                file:rounded-md file:border-0
-                                                file:text-sm file:font-semibold
-                                                file:bg-indigo-50 file:text-indigo-700
-                                                hover:file:bg-indigo-100"
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700">Description</label>
-                                            <textarea
-                                                name="description"
-                                                value={equipment.description}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                rows={2}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-700">Nom</p>
-                                            <p className="mt-1 text-sm text-gray-900">{equipment.name}</p>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Quantité</label>
-                                            <input
-                                                type="number"
-                                                name="quantity"
-                                                value={equipment.quantity}
-                                                onChange={(e) => handleEquipmentChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            {errors[`equipments.${index}.quantity`] && (
-                                                <p className="mt-1 text-sm text-red-600">{errors[`equipments.${index}.quantity`][0]}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-700">Prix</p>
-                                            <p className="mt-1 text-sm text-gray-900">{equipment.price}€</p>
-                                        </div>
-
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-700">Statut</p>
-                                            <p className="mt-1 text-sm text-gray-900">{equipment.status ? 'Disponible' : 'Indisponible'}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
-                    )}
-                </div>
-
-                {/* Bouton de soumission */}
-                <div className="flex justify-end">
                     <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                      type="button"
+                      onClick={() => handleArrayRemove(["modules", mi, "lessons"], li)}
+                      className="text-red-500"
                     >
-                        {isLoading ? 'Enregistrement...' : 'Créer la formation'}
+                      <FaTrash /> Supprimer leçon
                     </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleArrayAdd(["modules", mi, "lessons"], { title: "", contents: null })
+                  }
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                >
+                  <FaPlus /> Ajouter leçon
+                </button>
+
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleArrayRemove(["modules"], mi)}
+                    className="text-red-500"
+                  >
+                    <FaTrash /> Supprimer module
+                  </button>
                 </div>
-            </form>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                handleArrayAdd(["modules"], { title: "", description: "", lessons: [] })
+              }
+              className="bg-green-500 text-white px-3 py-1 rounded"
+            >
+              <FaPlus /> Ajouter module
+            </button>
+          </div>
+        );
+
+      // === Étape 3 : Équipements ===
+      case 2:
+        return (
+          <div>
+            <h2 className="text-xl font-bold mb-4">Équipements</h2>
+
+            <h3 className="font-semibold">Associer des équipements existants</h3>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {equipments.map((eq) => (
+                <label key={eq.id} className="flex items-center space-x-2 border p-2 rounded">
+                  <input
+                    type="checkbox"
+                    value={eq.id}
+                    checked={formData.equipment_ids.includes(eq.id)}
+                    onChange={(e) => {
+                      setFormData((prev) => {
+                        let updatedIds = [...prev.equipment_ids];
+                        if (e.target.checked) updatedIds.push(eq.id);
+                        else updatedIds = updatedIds.filter((id) => id !== eq.id);
+                        return { ...prev, equipment_ids: updatedIds };
+                      });
+                    }}
+                  />
+                  <span>{eq.name}</span>
+                </label>
+              ))}
+            </div>
+
+            <h3 className="font-semibold">Créer de nouveaux équipements</h3>
+            {formData.equipments.map((eq, ei) => (
+              <div key={ei} className="border p-3 mb-3 rounded">
+                <input
+                  type="text"
+                  placeholder="Nom"
+                  value={eq.name}
+                  onChange={(e) => handleInputChange(e, ["equipments", ei, "name"])}
+                  className="border p-2 w-full mb-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Prix"
+                  value={eq.price}
+                  onChange={(e) => handleInputChange(e, ["equipments", ei, "price"])}
+                  className="border p-2 w-full mb-2"
+                />
+                <textarea
+                  placeholder="Description"
+                  value={eq.description}
+                  onChange={(e) => handleInputChange(e, ["equipments", ei, "description"])}
+                  className="border p-2 w-full mb-2"
+                />
+                <textarea
+                  placeholder="Détails"
+                  value={eq.details}
+                  onChange={(e) => handleInputChange(e, ["equipments", ei, "details"])}
+                  className="border p-2 w-full mb-2"
+                />
+
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={eq.status}
+                    onChange={(e) =>
+                      handleInputChange(e, ["equipments", ei, "status"])
+                    }
+                  />
+                  <span>Disponible</span>
+                </label>
+
+                <input
+                  type="file"
+                  onChange={(e) => handleInputChange(e, ["equipments", ei, "picture"])}
+                  className="border p-2 w-full mb-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => handleArrayRemove(["equipments"], ei)}
+                  className="text-red-500"
+                >
+                  <FaTrash /> Supprimer équipement
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                handleArrayAdd(["equipments"], {
+                  name: "",
+                  price: 0,
+                  description: "",
+                  details: "",
+                  status: false,
+                  picture: null,
+                })
+              }
+              className="bg-green-500 text-white px-3 py-1 rounded"
+            >
+              <FaPlus /> Ajouter équipement
+            </button>
+          </div>
+        );
+
+      // === Étape 4 : Quizzes ===
+      case 3:
+        return (
+          <div>
+            <h2 className="text-xl font-bold mb-4">Quizzes</h2>
+            {formData.quizzes.map((quiz, qi) => (
+              <div key={qi} className="border p-4 mb-4 rounded">
+                <input
+                  type="text"
+                  placeholder="Titre du quiz"
+                  value={quiz.title}
+                  onChange={(e) => handleInputChange(e, ["quizzes", qi, "title"])}
+                  className="border p-2 w-full mb-2"
+                />
+                {errors[`quizzes.${qi}.title`] && (
+                  <p className="text-red-500">{errors[`quizzes.${qi}.title`]}</p>
+                )}
+
+                {quiz.questions.map((q, qj) => (
+                  <div key={qj} className="pl-4 border-l mb-2">
+                    <input
+                      type="text"
+                      placeholder="Question"
+                      value={q.title}
+                      onChange={(e) => handleInputChange(e, ["quizzes", qi, "questions", qj, "title"])}
+                      className="border p-2 w-full mb-2"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Points"
+                      value={q.point}
+                      onChange={(e) => handleInputChange(e, ["quizzes", qi, "questions", qj, "point"])}
+                      className="border p-2 w-full mb-2"
+                    />
+
+                    <h4 className="font-semibold">Options</h4>
+                    {q.options.map((opt, oi) => (
+                      <div key={oi} className="flex items-center space-x-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Option"
+                          value={opt.title}
+                          onChange={(e) =>
+                            handleInputChange(e, [
+                              "quizzes",
+                              qi,
+                              "questions",
+                              qj,
+                              "options",
+                              oi,
+                              "title",
+                            ])
+                          }
+                          className="border p-2 w-full"
+                        />
+                        <label className="flex items-center space-x-1">
+                          <input
+                            type="checkbox"
+                            checked={opt.answer}
+                            onChange={(e) =>
+                              handleInputChange(e, [
+                                "quizzes",
+                                qi,
+                                "questions",
+                                qj,
+                                "options",
+                                oi,
+                                "answer",
+                              ])
+                            }
+                          />
+                          <span>Bonne réponse</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleArrayRemove(["quizzes", qi, "questions", qj, "options"], oi)
+                          }
+                          className="text-red-500"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleArrayAdd(["quizzes", qi, "questions", qj, "options"], {
+                          title: "",
+                          answer: false,
+                        })
+                      }
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                    >
+                      <FaPlus /> Ajouter option
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleArrayAdd(["quizzes", qi, "questions"], {
+                      title: "",
+                      point: 1,
+                      options: [{ title: "", answer: false }],
+                    })
+                  }
+                  className="bg-green-500 text-white px-3 py-1 rounded"
+                >
+                  <FaPlus /> Ajouter question
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                handleArrayAdd(["quizzes"], {
+                  title: "",
+                  questions: [{ title: "", point: 1, options: [{ title: "", answer: false }] }],
+                })
+              }
+              className="bg-purple-500 text-white px-3 py-1 rounded"
+            >
+              <FaPlus /> Ajouter quiz
+            </button>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto p-4">
+      <ToastContainer />
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          {steps.map((label, index) => (
+            <div key={label} className="flex-1 text-center">
+              <button
+                type="button"
+                disabled={index > activeStep} // ❌ empêche d’aller à une étape non atteinte
+                onClick={() => setActiveStep(index)}
+                className={`inline-block px-4 py-2 rounded-full transition ${
+                  index === activeStep
+                    ? "bg-blue-600 text-white"
+                    : index < activeStep
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-gray-200 text-gray-700 cursor-not-allowed"
+                }`}
+              >
+                {index + 1}
+              </button>
+              <p className="mt-2 text-sm font-medium">{label}</p>
+            </div>
+          ))}
         </div>
-    );
-}
+      </div>
+
+      {/* --- steps UI --- */}
+      <form onSubmit={(e) => handleSubmit(e)}>
+         <AnimatePresence>
+           <motion.div
+             key={activeStep}
+             initial={{ opacity: 0, x: 50 }}
+             animate={{ opacity: 1, x: 0 }}
+             exit={{ opacity: 0, x: -50 }}
+             transition={{ duration: 0.3 }}
+           >
+             {renderStepContent(activeStep)}
+           </motion.div>
+         </AnimatePresence>
+         <div className="flex justify-between mt-6">
+           <button
+             type="button"
+             onClick={handleBack}
+             disabled={activeStep === 0}
+             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md disabled:opacity-50"
+           >
+             Retour
+           </button>
+           {activeStep === steps.length - 1 ? (
+             <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
+               Créer Formation
+             </button>
+           ) : (
+             <button
+               type="button"
+               onClick={handleNext}
+               className="px-4 py-2 bg-blue-500 text-white rounded-md"
+             >
+               Suivant
+             </button>
+           )}
+         </div>
+      </form>
+    </motion.div>
+  );
+};
+
+export default FormationCreatePage;

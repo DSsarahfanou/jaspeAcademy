@@ -13,26 +13,23 @@ class InternshipRequestResponse extends Mailable
     public $student;
     public $formation;
     public $status;
-    public $adminMessage;
+    public $messageFromAdmin;
 
-    public function __construct($student, $formation, $status, $adminMessage)
+    public function __construct($student, $formation, $status, $messageFromAdmin = '')
     {
         $this->student = $student;
         $this->formation = $formation;
         $this->status = $status;
-        $this->message = $adminMessage;
+        $this->messageFromAdmin = $messageFromAdmin;
     }
 
     public function build()
     {
-        $statusText = $this->status === 'approved' ? 'Approuvée' : 'Rejetée';
-        return $this->subject('Réponse à votre demande de stage')
-                    ->view('emails.internship_request_response')
-                    ->with([
-                        'student_name' => $this->student->name . ' ' . $this->student->surname,
-                        'formation_name' => $this->formation->name,
-                        'status' => $statusText,
-                        'message' => $this->message,
-                    ]);
+        $subject = $this->status === 'approved'
+            ? 'Votre demande de stage a été approuvée'
+            : 'Votre demande de stage a été rejetée';
+
+        return $this->subject($subject)
+            ->markdown('emails.internship_request_response');
     }
 }

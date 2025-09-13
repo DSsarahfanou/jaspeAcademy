@@ -74,8 +74,30 @@ class DashboardController extends Controller
 
         // 2. Stats des meetings
         $meetings = Meeting::query()
-            ->selectRaw('COUNT(CASE WHEN meetings.progression_level <= formation_students.progression AND meeting_student.meeting_id IS NULL THEN 1 END) as available')
-            ->selectRaw('COUNT(CASE WHEN meeting_student.meeting_id IS NOT NULL THEN 1 END) as completed')
+            ->selectRaw("
+                COUNT(
+                    CASE 
+                        WHEN meetings.progression_level <= formation_students.progression
+                        AND meeting_student.meeting_id IS NULL
+                        AND NOT EXISTS (
+                            SELECT 1 FROM meeting_student ms
+                            JOIN meetings m2 ON ms.meeting_id = m2.id
+                            WHERE ms.student_id = ?
+                            AND m2.formation_id = meetings.formation_id
+                            AND m2.progression_level = meetings.progression_level
+                        )
+                        THEN 1
+                    END
+                ) as available
+            ", [$user->id])
+            ->selectRaw("
+                COUNT(
+                    CASE 
+                        WHEN meeting_student.meeting_id IS NOT NULL
+                        THEN 1
+                    END
+                ) as completed
+            ")
             ->join('formation_students', 'meetings.formation_id', '=', 'formation_students.formation_id')
             ->leftJoin('meeting_student', function($join) use ($user) {
                 $join->on('meetings.id', '=', 'meeting_student.meeting_id')
@@ -83,6 +105,7 @@ class DashboardController extends Controller
             })
             ->where('formation_students.student_id', $user->id)
             ->first();
+
 
         return response()->json([
             'formations_en_cours' => $formationsStats->formations_en_cours ?? 0,
