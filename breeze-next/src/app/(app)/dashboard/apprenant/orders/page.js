@@ -13,7 +13,7 @@ export default function OrdersList() {
   useEffect(() => {
     axios.get('/api/orders_student')
       .then(response => {
-        console.log(response);
+
         setOrders(response.data.data);
       })
       .catch(error => {

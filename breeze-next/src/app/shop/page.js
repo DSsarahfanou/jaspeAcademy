@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { FaShoppingCart, FaSearch, FaTimes, FaPlus, FaMinus, FaTrash, FaInfoCircle, FaChevronRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +85,7 @@ export default function Equipements() {
     });
 
     addKkiapayListener('success', (response) => {
-      console.log('Payment successful!', response);
+
       setPanier([]);
       setPanierOuvert(false);
       // Vous pouvez ajouter une notification de succès ici
@@ -95,7 +97,7 @@ export default function Equipements() {
     });
 
     addKkiapayListener('cancel', () => {
-      console.log('Payment cancelled');
+
     });
   };
 

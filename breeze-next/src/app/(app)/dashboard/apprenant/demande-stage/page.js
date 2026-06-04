@@ -45,8 +45,8 @@ export default function StudentInternshipRequests() {
             'Accept': 'application/json',
           },
         });
-        console.log(formationsResponse);
-        console.log(formationsResponse.data.completed_formations);
+
+
         // Filtrer les formations terminées sans demande de stage
         const eligibleFormations = formationsResponse.data.completed_formations.filter(f => 
           f.pivot_data.progression === 100 && !f.pivot_data.request_internership
@@ -54,7 +54,7 @@ export default function StudentInternshipRequests() {
         setFormations(eligibleFormations);
       } catch (error) {
         toast.error(error.response?.data?.message || 'Erreur lors de la récupération des données');
-        console.log(error);
+
       } finally {
         setLoading(false);
       }

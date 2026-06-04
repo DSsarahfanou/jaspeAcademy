@@ -37,7 +37,7 @@ const FormationCreatePage = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get("/api/teachers");
-        console.log(res.data.data.data);
+
         setTeachers(res.data.data.data); // Laravel retourne {data: [...]}
       } catch {
         toast.error("Erreur lors du chargement des formateurs");
@@ -131,30 +131,30 @@ const FormationCreatePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("➡️ Submit déclenché");
+
     if (!validateStep()) {
       toast.error("Veuillez remplir tous les champs requis");
       return;
     }
-    console.log("➡️ Submit déclenché");
+
     const formDataToSend = new FormData();
-    console.log("➡️ Submit déclenché");
-    console.log(formDataToSend);
+
+
     // Champs simples
     formDataToSend.append("name", formData.name);
     formDataToSend.append("prerequisites", formData.prerequisites);
     formDataToSend.append("price", formData.price);
     formDataToSend.append("formation_details", formData.formation_details);
     formDataToSend.append("teacher_id", formData.teacher_id);
-    console.log(formDataToSend);
+
     if (formData.picture) formDataToSend.append("picture", formData.picture);
-    console.log(formDataToSend);
+
 
     // Equipements existants
     formData.equipment_ids.forEach((id, i) =>
       formDataToSend.append(`equipment_ids[${i}]`, id)
     );
-    console.log(formDataToSend);
+
 
     // Nouveaux équipements
     formData.equipments.forEach((eq, i) => {
@@ -165,7 +165,7 @@ const FormationCreatePage = () => {
       formDataToSend.append(`equipments[${i}][details]`, eq.details || "");
       if (eq.picture) formDataToSend.append(`equipments[${i}][picture]`, eq.picture);
     });
-    console.log(formDataToSend);
+
 
     // Modules & leçons
     formData.modules.forEach((mod, mi) => {
@@ -177,7 +177,7 @@ const FormationCreatePage = () => {
           formDataToSend.append(`modules[${mi}][lessons][${li}][contents]`, les.contents);
       });
     });
-    console.log(formDataToSend);
+
 
     // Quizzes
     formData.quizzes.forEach((quiz, qi) => {
@@ -194,8 +194,8 @@ const FormationCreatePage = () => {
         });
       });
     });
-    console.log(formDataToSend);
-    console.log(formData);
+
+
 
     try {
       await axios.post("/api/formations", formDataToSend, {

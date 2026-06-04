@@ -1,21 +1,22 @@
-import { AccessToken } from 'livekit-server-sdk';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
-  const { formationId, progressLevel, date } = await req.json();
-  const apiKey = process.env.LIVEKIT_API_KEY;
-  const apiSecret = process.env.LIVEKIT_API_SECRET;
-  const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
+  try {
+    // Récupérer le token depuis le backend Laravel
+    const authHeader = req.headers.get('authorization');
+    
+    const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/livekit/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader || '',
+      },
+      body: await req.text(),
+    });
 
-  if (!apiKey || !apiSecret || !wsUrl) {
-    return NextResponse.json({ error: 'Configuration LiveKit manquante' }, { status: 400 });
+    const data = await backendResponse.json();
+    return NextResponse.json(data, { status: backendResponse.status });
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la génération du token' }, { status: 500 });
   }
-
-  const room = `formation-${formationId}-progress-${progressLevel}-${Date.now()}`;
-  const identity = `trainer-${formationId}`;
-
-  const at = new AccessToken(apiKey, apiSecret, { identity });
-  at.addGrant({ roomJoin: true, room });
-
-  return NextResponse.json({ token: at.toJwt(), room });
 }

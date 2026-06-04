@@ -1,3 +1,5 @@
+'use client'
+
 import useSWR from 'swr'
 import axios from '/src/lib/axios'
 import { useState } from 'react'

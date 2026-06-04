@@ -17,7 +17,7 @@ export default function AdminOrdersPage() {
       try {
         const res = await fetch('http://localhost:8000/api/orders')
         const data = await res.json()
-        console.log(data)
+
         setOrders(data.data || [])
       } catch (err) {
         console.error(err)
@@ -41,7 +41,7 @@ export default function AdminOrdersPage() {
 
   const handleValidate = async (orderId) => {
     try {
-      console.log(orderId)
+
       const order_status = true;
       await axios.patch(`http://localhost:8000/api/orders/${orderId}`, {order_status});
       toast.success('commande déjà livrée.');

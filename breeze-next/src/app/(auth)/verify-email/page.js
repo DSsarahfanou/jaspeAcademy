@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
 import Button from '/src/components/Button'
 import { useAuth } from '/src/hooks/auth'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const Page = () => {
+export default function Page() {
     const { user, logout, resendEmailVerification } = useAuth({
         middleware: 'auth',
         redirectIfAuthenticated: '/dashboard',
@@ -77,5 +77,3 @@ const Page = () => {
         </>
     )
 }
-
-// export default Page

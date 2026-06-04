@@ -72,12 +72,12 @@ export default function ProfilAnimateur() {
       })
       await mutate()
       setFeedback({ type: 'success', message: 'Téléphone ou photo mis à jour avec succès !' })
-      console.log("Données sauvegardées :", animateur);
+
       setMessage("Modifications enregistrées avec succès !");
       setTimeout(() => setMessage(""), 3000);
     } catch {
       setFeedback({ type: 'error', message: 'Erreur lors de la mise à jour.' })
-      console.log();
+
     } finally {
       setIsSubmitting(false)
       setTimeout(() => setFeedback({ type: '', message: '' }), 3000)
@@ -100,7 +100,7 @@ export default function ProfilAnimateur() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Ici, tu peux envoyer les données à une API
-    console.log("Données sauvegardées :", animateur);
+
     setMessage("Modifications enregistrées avec succès !");
     setTimeout(() => setMessage(""), 3000);
   };

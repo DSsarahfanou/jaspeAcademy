@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { FaShoppingCart, FaSearch, FaTimes, FaPlus, FaMinus, FaTrash, FaInfoCircle, FaChevronRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -138,8 +140,8 @@ export default function Equipements() {
   // };
 
   const handleSuccess = async (response) => {
-    console.log('Payment successful!', response);
-    console.log("l'insertion dans orderData");
+
+
     try {
       const orderData = {
         sum: totalPanier,
@@ -149,9 +151,9 @@ export default function Equipements() {
           quantity: item.quantite
         })),
       };
-      console.log(orderData);
+
       await axios.get('sanctum/csrf-cookie', { withCredentials: true });
-      console.log("Envoie de la requete post");
+
       const res = await axios.post('/api/orders', orderData, {
         withCredentials: true,
         headers: {
@@ -159,11 +161,11 @@ export default function Equipements() {
           'Accept': 'application/json'
         }
       });
-      console.log("la variale res:");
-      console.log(res);
+
+
       const invoiceUrl = res.data?.data?.invoice_url;
       setUrl(invoiceUrl);
-      console.log(invoiceUrl);
+
       // if (invoiceUrl) {
       //   toast.success(
       //     <div>
@@ -245,7 +247,7 @@ export default function Equipements() {
     });
 
     addKkiapayListener('cancel', () => {
-      console.log('Payment cancelled');
+
       alert('Paiement annulé.');
       removeKkiapayListener('success', this);
       removeKkiapayListener('error', this);

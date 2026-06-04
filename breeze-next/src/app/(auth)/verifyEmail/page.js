@@ -34,8 +34,8 @@ useEffect(() => {
       setData(JSON.parse(saved));
     }
   }, []);
-  console.log("récuppérer les données du formulaire");
-  console.log(data);
+
+
   const [errors, setErrors] = useState({});      
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -70,7 +70,7 @@ useEffect(() => {
 
   // Envoyer le code par email
 const sendCode = async () => {
-  console.log(data.email);
+
   setEmail(data.email);
 
   await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
@@ -82,7 +82,7 @@ const sendCode = async () => {
     );
 
     setMessage(res.data.message);
-    console.log(res.data.message);
+
   } catch (err) {
     console.error(err);
     setMessage("Erreur lors de l’envoi du code");
@@ -101,17 +101,17 @@ const sendCode = async () => {
       
       const res =  await axios.post('/api/verify-2fa-code', { email, code }, { withCredentials: true });
       setMessage(res.data.message);
-      console.log(message);
+
       if (res.data.status === 'success') {
         // Redirection après succès
           const response = await register({ 
             data: data,
             setErrors: (errs) => setErrors(errs)
           }); 
-          console.log('avant le localstorage')
+
           // Stockez le token dans localStorage
           localStorage.setItem('token', response.token);
-          console.log('apres le localstorage')
+
       }
     } catch (err) {
       console.error(err);

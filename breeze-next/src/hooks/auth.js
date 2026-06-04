@@ -261,22 +261,22 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
             //     withCredentials: true,
             // });
 
-            console.log("Avant le post dans register");
+
             const registerResponse = await axios.post('/register', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
                 withCredentials: true,
             });
-            console.log("Après le post dans register")
+
 
             await mutate();
 
-            console.log("Avant la récuppérartion dans user dans register")
+
             // Récupérer l'utilisateur pour connaître son rôle
             const userResponse = await axios.get('/api/user');
             const role = userResponse.data.role || 'student';
-            console.log(userResponse.data.role); 
+
             router.push(getRedirectPath(role));
             // ← ici tu retournes le token
             return registerResponse.data.token;

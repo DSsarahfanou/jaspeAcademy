@@ -152,8 +152,8 @@ export default function Register() {
             
             // Redirigez vers la page de vérification
             const formDataObj = Object.fromEntries(formDataToSend.entries());
-            console.log(formDataObj);
-            console.log('avant le localstorage');
+
+
             localStorage.setItem("formData", JSON.stringify(formDataObj));
             router.push("/verifyEmail");
         } catch (error) {
