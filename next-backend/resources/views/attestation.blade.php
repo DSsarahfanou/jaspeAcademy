@@ -128,7 +128,7 @@
                 Nous déployons des solutions en réseaux, fibre optique, vidéosurveillance, sécurité, data centers et formation professionnelle à travers <strong>jaspeAcademy</strong>.
             </p>
             <p>
-                📍 Calavi, Bidossesi • 📞 +229 47332880 / +229 21333008 • ✉️ contact@jaspetechnologies.com
+                <i class="fas fa-map-marker-alt"></i> Calavi, Bidossesi &bull; <i class="fas fa-phone"></i> +229 47332880 / +229 21333008 &bull; <i class="fas fa-envelope"></i> contact@jaspetechnologies.com
             </p>
         </div>
 

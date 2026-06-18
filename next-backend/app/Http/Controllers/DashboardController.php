@@ -55,7 +55,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard');
+        return redirect()->route('web.redirect');
     }
 
     public function getStats(Request $request)
